@@ -1,3 +1,6 @@
+# SQLite Database fie
+**/*.db
+
 # Logs
 logs
 *.log
