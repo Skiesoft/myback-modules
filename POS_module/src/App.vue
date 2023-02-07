@@ -46,7 +46,8 @@ export default {
       arrowCounter: -1,
       actualIncome: "",
       payment: "cash",
-      bill: false
+      bill: false,
+      isMember: false
     }
   },
   mounted() {
@@ -181,13 +182,16 @@ export default {
       let found = await db.find(Member, query)
       if (found[0]){
         this.membername = found[0].name
+        this.isMember = true
       }
     },
     async countAdd(index: number){
+      this.counts[index] = Number(this.counts[index])
       this.counts[index] += 1
       this.calprice(index)
     },
     async countMinus(index: number){
+      this.counts[index] = Number(this.counts[index])
       this.counts[index] -= 1
       this.calprice(index)
     },
@@ -348,7 +352,8 @@ export default {
       this.arrowCounter = -1
       this.actualIncome = ""
       this.payment = "cash"
-      this.bill = false
+      this.bill = false,
+      this.isMember = false
     },
     async paymentChange(){
       if(this.payment == 'creditCard'){
@@ -360,9 +365,32 @@ export default {
         this.updatetotalprice()
       }
     },
+    async changebill(){
+      this.updatetotalprice()
+    },
     async showdb(){
       let db = new Database()
       console.log(await db.all(Deal))
+    },
+    async removeMember(){
+      this.membername = ''
+      this.isMember = false
+    },
+    async onlyNumberAndDash(evt: KeyboardEvent): Promise<void>{
+      const keysAllowed: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-'];
+      const keyPressed: string = evt.key;
+    
+      if (!keysAllowed.includes(keyPressed)) {
+            evt.preventDefault()
+      }
+    },
+    async onlyNumber(evt: KeyboardEvent): Promise<void>{
+      const keysAllowed: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+      const keyPressed: string = evt.key;
+    
+      if (!keysAllowed.includes(keyPressed)) {
+            evt.preventDefault()
+      }
     }
   },
 
@@ -375,6 +403,7 @@ export default {
         this.isOpen = false;
       }
     }
+    
   }
 
 }
@@ -386,11 +415,11 @@ export default {
       <div class="d-flex flex-column col-4 border rounded bg-white text-dark m-2 p-2">
         <div class="d-flex">
           <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>條碼</b></h3>
-          <input type="text" class="align-self-center form-control me-2 m-0" placeholder="條碼" v-model="barcode" @keyup.enter="findBarcode">
+          <input type="text" class="align-self-center form-control me-2 m-0" placeholder="條碼" v-model="barcode" @keyup.enter="findBarcode" @keypress="onlyNumberAndDash($event)">
         </div>
         <div class="d-flex">
           <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>I D</b></h3>
-          <input type="text" class="align-self-center form-control me-2 m-0" placeholder="ID" v-model="id" @keyup.enter="findID">
+          <input onkeyup="this.value=this.value.replace(/\D/g,'')" type="text" class="align-self-center form-control me-2 m-0" placeholder="ID" v-model="id" @keyup.enter="findID" @keypress="onlyNumber($event)">
         </div>
         <div class="d-flex">
           <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>名稱</b></h3>
@@ -450,7 +479,7 @@ export default {
                 <div class="d-flex">
                   <h4 class="align-self-center m-0 col-2">{{ item.price }}</h4>
                   <div class="d-flex">
-                    <input type="text" class="align-self-center form-control form-control-sm h-25" v-model="changeprices[index]" placeholder="折價差額" @input="calprice(index)">
+                    <input type="text" class="align-self-center form-control form-control-sm h-25" v-model="changeprices[index]" placeholder="折價差額" @input="calprice(index)"  @keypress="onlyNumber($event)"/>
                     <input type="text" class="align-self-center form-control form-control-sm h-25 ms-1" placeholder="原因" v-model="reasons[index]">
                   </div>
                 </div>
@@ -458,7 +487,7 @@ export default {
               <td class="p-0">
                 <div class="d-flex align-content-end">
                   <button type="button" class="btn btn-bd-count"><i class="bi bi-dash" @click="countMinus(index)"></i></button>
-                  <input class="form-control form-control-sm" type="text" placeholder="變數" v-model="counts[index]" @input="calprice(index)">
+                  <input class="form-control form-control-sm" type="text" placeholder="數量" v-model="counts[index]" @input="calprice(index)"  @keypress="onlyNumberAndDash($event)">
                   <button type="button" class="btn btn-bd-count"><i class="bi bi-plus" @click="countAdd(index)"></i></button>
                 </div>
               </td>
@@ -477,14 +506,15 @@ export default {
     </div>
     <div class="w-100 border rounded bg-white text-dark m-2 p-2">
       <div class="d-flex mt-3 mb-3">
-        <div class="d-flex ms-3 flex-fill">
+        <div class="d-flex ms-3 flex-fill clearfix">
           <h3 class="col-1 align-self-center m-0">會員:</h3>
-          <div class="col-7"><input type="text" class="form-control" placeholder="0987654321" v-model="phonenumber" @keyup.enter="findmember"></div>
+          <div class="col-7"><input onkeyup="this.value=this.value.replace(/\D/g,'')" type="text" class="form-control" placeholder="0987654321" v-model="phonenumber" @keyup.enter="findmember"  @keypress="onlyNumber($event)"></div>
           <h3 class="align-self-center m-0 ms-3">名稱：{{ membername }}</h3>
+          <button v-show="isMember" class="btn btn-outline-secondary ms-auto" @click="removeMember"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="d-flex col-5 me-3 justify-content-end">
           <h2 class="align-self-center me-2 mb-0"><b>應收: {{ totalprice }} </b></h2>
-          <h2 class="align-self-center mb-0 d-flex justify-content-end"><b class="align-self-center">實收:</b><div class="col-8 ms-2"><input class="form-control" type="text" placeholder="金額" v-model="actualIncome"/></div></h2>
+          <h2 class="align-self-center mb-0 d-flex justify-content-end"><b class="align-self-center">實收:</b><div class="col-8 ms-2"><input class="form-control" type="text" placeholder="金額" v-model="actualIncome"  @keypress="onlyNumber($event)"/></div></h2>
         </div>
       </div>
       <div class="d-flex justify-content-between mt-3 mb-3">
@@ -495,7 +525,7 @@ export default {
             <option value="creditCard">信用卡</option>
           </select>
           <div class="form-check align-self-center col-5 m-0 ms-4">
-              <input class="form-check-input" type="checkbox" value="receipt" id="receipt1" v-model="bill">
+              <input class="form-check-input" type="checkbox" value="receipt" id="receipt1" v-model="bill" @change="changebill">
               <label class="form-check-label" for="receipt1">
                 開立發票(金額加上營業稅 5 %)
               </label>
