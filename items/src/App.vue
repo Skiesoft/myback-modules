@@ -2,13 +2,13 @@
   import LineChart from './components/Chart.vue'
   import { Item } from './model/item'
   import { Database, QueryBuilder, Storage} from '@myback/sdk'
+  import * as bootstrap from 'bootstrap'
 
   export default {
   name: 'App',
   data(){
     const page_size: number = 9
-    const target_count: number = 0;
-    const serial_number: number = 0;
+    const list_item_count: number = 0;
 
     const sort_target: string = 'id'
     const sort_order: string = 'asc'
@@ -24,9 +24,10 @@
     const search_target: string = ''
 
     const name: string = ''
-    const upc: number = 0
+    const serial_number: string = ''
+    const upc: string = ''
     const category: string = ''
-    const status: string = ''
+    const status: string = '待進貨'
     const manufacturer: string = ''
     const price: number = 0
     const unit: string = ''
@@ -43,7 +44,7 @@
 
     return {
       page_size,
-      target_count,
+      list_item_count,
 
       sort_target,
       sort_order,
@@ -82,18 +83,32 @@
   },
   methods: {
     async changePage(page: number){
+      document.getElementById("page"+String(this.current_page))?.classList.remove('active')
       this.current_page = page
+      document.getElementById("page"+String(this.current_page))?.classList.add('active')
       this.updateList()
     },
+    async activateCurrentPage(){
+      let page = document.getElementById("page"+String(this.current_page))
+      page?.classList.add('active')
+    },
     async updatePageList(){
+      for(let page in this.page_list){
+        document.getElementById("page"+String(page))?.classList.remove('active')
+      }
+
       this.page_list = []
       for(let i = 0 ; i < 3 ; i++){
         if(this.page_list_starter + i > this.total_page){
+          await new Promise(f => setTimeout(f, 1))
+          await this.activateCurrentPage()
           return
         }
         this.page_list.push(this.page_list_starter + i)
         
       }
+      
+      
     },
     async nextPageList(){
       if(this.page_list_starter + 3 > this.total_page){
@@ -101,6 +116,7 @@
       }
       this.page_list_starter += 3
       this.updatePageList()
+      
     },
     async prevPageList(){
       if(this.page_list_starter - 3 < 0){
@@ -111,24 +127,23 @@
     },
     async updateList() {
       const db = new Database()
-      this.total_items = await db.count(Item)
+      this.total_items = await db.sum(Item, 'stock')
+      let query
       if(this.search_target == ''){
-        let query = QueryBuilder.orderBy(QueryBuilder.greaterThan('id', -1), this.sort_target, this.sort_order)
-        this.items = await db.find(Item, query, this.current_page-1, this.page_size)
-        this.total_page = Math.ceil(this.total_items/this.page_size)
+        query = QueryBuilder.orderBy(QueryBuilder.greaterThan('id', -1), this.sort_target, this.sort_order)
       }
       else{
-        let query = QueryBuilder.orderBy(QueryBuilder.like('name', '%'+this.search_target+'%'), this.sort_target, this.sort_order)
-        this.items = await db.find(Item, query, this.current_page-1, this.page_size)
-        //this.target_count = await db.count(Item, query)
-        //window.alert(this.target_count)
-        //this.total_page = Math.ceil(this.target_count/this.page_size)
+        query = QueryBuilder.orderBy(QueryBuilder.like('name', '%'+this.search_target+'%'), this.sort_target, this.sort_order) 
       }
+      this.items = await db.find(Item, query, this.current_page-1, this.page_size)
+      this.list_item_count = await db.count(Item, query)
+      this.total_page = Math.ceil(this.list_item_count/this.page_size)
       await this.updatePageList()
     },
     infoInput(item: Item){
 
       item.name = this.name
+      item.serial_number = this.serial_number
       item.upc = this.upc
       item.category = this.category
       item.status = this.status
@@ -143,33 +158,74 @@
       item.remark = this.remark
 
     },
-    async editInfo(item: Item){
+    async check(){
+      let ck:boolean = false;
+      let message:string = ""
       const db = new Database()
-      console.log(item.getOldProperties())
-      await db.save(Item, item)
-      this.updateList()
-      this.clear()
+
+      if(this.name == ''){
+        ck = true
+        message += "名稱是必填項目\n"
+      }
+
+      if(this.upc != ''){
+        let query = QueryBuilder.equal('upc', this.upc)
+        if(await db.count(Item, query) > 0){
+          ck = true
+          message += "條碼重複\n"
+        }
+      }
+
+      if(this.category == ''){
+        ck = true
+        message += "分類是必填項目\n"
+      }
+
+      if(this.manufacturer == ''){
+        ck = true
+        message += "製造商是必填項目\n"
+      }
+
+      if(this.price == 0){
+        ck = true
+        message += "定價是必填項目\n"
+      }
+
+      if(this.unit == ''){
+        ck = true
+        message += "單位是必填項目\n"
+      }
+      
+      if(ck){
+        window.alert(message)
+      }
+
+      return ck
     },
     async saveItem() {
-
-      if(this.target != null){
-        this.infoInput(this.target)
-        await this.editInfo(this.target)
-        this.target = null
-        this.clear()
+      if(await this.check()){
         return
       }
 
-      const item = new Item()
-      this.infoInput(item)
-
-      item.create_time = this.getdate()
-      item.plan_on_ordering = 0
-      item.ordered = 0
-      item.stock = 0
-      
       const db = new Database()
-      await db.save(Item, item)
+
+      if(this.target == null){
+        const item = new Item()
+        this.infoInput(item)
+
+        item.create_time = this.getdate()
+        item.plan_on_ordering = 0
+        item.ordered = 0
+        item.stock = 0
+        await db.save(Item, item)
+      }
+      else{
+        this.infoInput(this.target)
+        await db.save(Item, this.target)
+        this.target = null
+      }
+      bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide()
+      
       this.updateList()
       this.clear()
     },
@@ -183,6 +239,7 @@
       this.target = item
 
       this.name = item.name
+      this.serial_number = item.serial_number
       this.upc = item.upc
       this.category = item.category
       this.status = item.status
@@ -205,10 +262,13 @@
       return yyyy + '/' + mm + '/' + dd
     },
     clear(){
+      this.target = null
+
       this.name = ''
-      this.upc = 0
+      this.serial_number = ''
+      this.upc = ''
       this.category = ''
-      this.status = ''
+      this.status = '待進貨'
       this.manufacturer = ''
       this.price = 0
       this.unit = ''
@@ -243,6 +303,12 @@
 
       this.updateList()
       
+    },
+    async open(){
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('addProductModal')).show()
+      if(this.target == null) 
+        return  
+      this.clear()
     }
   },
   components: { LineChart }
@@ -365,7 +431,7 @@
                 </button>
               </li>
               <div class="d-flex" v-for="page in page_list">
-                <li class="page-item" ><button class="page-link rounded-0" href="#" @click="changePage(page)">{{ page }}</button></li>
+                <li class="page-item"  :id="'page' + page"><button class="page-link rounded-0" href="#" @click="changePage(page)">{{ page }}</button></li>
               </div>
               <li class="page-item">
                 <button class="page-link" href="#" @click="nextPageList()">
@@ -378,7 +444,7 @@
 
         <div class="col-4  d-flex">
           <input @keyup.enter="updateList()" type="text" class="form-control" placeholder="Search" v-model="search_target">
-          <button type="button" class="btn btn-primary ms-3 col-3 fw-bold" style="background: #3B587A;" data-bs-toggle="modal" data-bs-target="#addProductModal">新增商品</button>
+          <button type="button" class="btn btn-primary ms-3 col-3 fw-bold" style="background: #3B587A;" @click="open()">新增商品</button>
         </div>
       </div>
       
@@ -427,7 +493,7 @@
           </div>
         </div>
         <div class="col fw-bold d-flex align-items-center">
-          進口商
+          製造商
           <div id="manufacturer" class="d-flex flex-column ms-1" @click="sort('manufacturer')" type="button">
             <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
             <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px" ></i></div>
@@ -442,13 +508,13 @@
         <div class="d-flex container mt-2">
           <div class="me-5" style="width: 31px">{{ item.id }}</div>
           <div class="col-2 overflowhidden me-2">{{ item.name }}</div>
-          <div class="col">{{ item.category }}</div>
+          <div class="col overflowhidden">{{ item.category }}</div>
           <div class="col">{{ item.status }}</div>
           <div class="col">{{ item.stock }}</div>
           <div class="col">{{ item.create_time }}</div>
           <div class="col">{{ item.manufacturer }}</div>
           <div class="d-flex col">
-            <button class="link" style="color: #3B587A" data-bs-toggle="modal" data-bs-target="#addProductModal" @click="load(item)">Edit</button>
+            <button class="link" style="color: #3B587A" @click="open();load(item)">Edit</button>
             <button class="link link-danger ms-1" @click="remove(item)">Delete</button>
           </div>
         </div>
@@ -549,10 +615,10 @@
 
     <div class="modal fade" id="addProductModal" tabindex="-1">
       <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content needs-validation">
           <div class="align-items-center justify-content-between d-flex">
             <h4 class="fw-bold m-3 mb-1">商品資訊</h4>
-            <button type="button" class="btn-close m-3 mb-1" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button type="button" class="btn-close m-3 mb-1" data-bs-dismiss="modal"></button>
           </div>
           <hr class="border border-secondary opacity-100  m-1" />
           <div class="m-3 mt-1 flex-col">
@@ -570,20 +636,16 @@
             </div>
             <div class="d-flex align-items-center mt-2">
               <h6 class="col-3 m-0 pt-1 pb-1">分類</h6>
-              <div class="col-6">
-              <select class="form-select"  v-model="category">
-                <option selected>option 1</option>
-                <option selected>option 2</option>
-              </select>
-              </div>
+              <input type="text" class="form-control p-1" v-model="category">
             </div>
             <div class="d-flex align-items-center mt-2">
               <h6 class="col-3 m-0 pt-1 pb-1">狀態</h6>
               <div class="col-6">
               <select class="form-select" v-model="status">
-                <option selected>預購中</option>
-                <option>販售中</option>
+                <option selected>待進貨</option>
+                <option>銷售中</option>
                 <option>缺貨中</option>
+                <option>絕版（或不再進貨）</option>
               </select>
               </div>
             </div>
@@ -593,7 +655,7 @@
             </div>
             <div class="d-flex align-items-center mt-2">
               <h6 class="col-3 m-0 pt-1 pb-1">定價</h6>
-              <input type="text" class="form-control p-1" v-model="price">
+              <input type="number" class="form-control p-1" v-model="price">
             </div>
             <div class="d-flex align-items-center mt-2">
               <h6 class="col-3 m-0 pt-1 pb-1">單位</h6>
@@ -601,13 +663,13 @@
             </div>
             <div class="d-flex align-items-center mt-2">
               <h6 class="col-3 m-0 pt-1 pb-1">重量</h6>
-              <input type="text" class="form-control p-1" v-model="weight">
+              <input type="number" class="form-control p-1" v-model="weight">
             </div>
             <div class="d-flex align-items-center mt-2">
               <h6 class="col-3 m-0 pt-1 pb-1">尺寸</h6>
-              <input type="text" class="form-control p-1" v-model="length">
-              <input type="text" class="form-control p-1 ms-1" v-model="width">
-              <input type="text" class="form-control p-1 ms-1" v-model="height">
+              <input type="number" class="form-control p-1" v-model="length">
+              <input type="number" class="form-control p-1 ms-1" v-model="width">
+              <input type="number" class="form-control p-1 ms-1" v-model="height">
             </div>
             <div class="d-flex align-items-start mt-2 flex-wrap flex-col">
               <h6 class="col-3 m-0 pt-1 pb-1">圖片</h6>
@@ -626,9 +688,9 @@
               <textarea class="form-control" v-model="remark"></textarea>
             </div>
             <div class="d-flex justify-content-end">
-              <button type="button" class="btn btn-primary ms-3 col-2 fw-bold" style="background: #3B587A;" @click="saveItem()" data-bs-dismiss="modal">Save</button>
-          </div>
-        </div>
+              <button type="submit" class="btn btn-primary ms-3 col-2 fw-bold" style="background: #3B587A;" @click="saveItem()">Save</button>
+            </div>
+          </div >
       </div>
     </div>
   </div>

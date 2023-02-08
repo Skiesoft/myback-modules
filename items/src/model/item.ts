@@ -6,11 +6,11 @@ export class Item extends Model {
     @attribute({ type: 'int', primary: true, autoIndex: true})
         id?: number
 
-    @attribute({ type: 'int', nullable: true})
-        serial_number?: number
+    @attribute({ type: 'string', nullable: true})
+        serial_number?: string
 
-    @attribute({ type: 'int', nullable: true, unique: true })
-        upc?: number
+    @attribute({ type: 'string', nullable: true, unique: true })
+        upc?: string
 
     @attribute({ type: 'string'})
         name?: string

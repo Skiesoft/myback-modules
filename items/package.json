@@ -13,9 +13,12 @@
   },
   "dependencies": {
     "@myback/sdk": "^0.3.3",
+    "boostrap": "^2.0.0",
+    "bootstrap": "^5.2.3",
+    "bootstrap-vue": "^2.23.1",
     "chart.js": "^4.2.0",
     "ts-node": "^10.9.1",
-    "vue": "^3.2.45",
+    "vue": "^3.2.47",
     "vue-chartjs": "^5.2.0"
   },
   "devDependencies": {
