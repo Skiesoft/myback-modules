@@ -1,10 +1,11 @@
 <script lang="ts">
+import { defineComponent } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
 import { Item } from './model/item'
 import { Member } from './model/member'
 import { Deal } from './model/deal'
 
-export default {
+export default defineComponent ({
   data() {
     const items: Array<Item> = [];
     const barcodes: Array<number> = [];
@@ -438,7 +439,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 
 <template>
