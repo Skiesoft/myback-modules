@@ -14,28 +14,28 @@ export class Deal extends Model {
     @attribute({ type: 'int'})
         stock_change?: number
 
-    @attribute({ type: 'string', nullable: true})
+    @attribute({ type: 'string', nullable: true })
         importer?: string
 
-    @attribute({ type: 'relation', nullable: true})
+    @attribute({ type: 'relation', nullable: true })
         member?: Member
     
-    @attribute({ type: 'float', nullable: true})
+    @attribute({ type: 'float', nullable: true })
         adviced_price?: number
 
-    @attribute({ type: 'float'})
+    @attribute({ type: 'float' })
         pricing?: number
 
-    @attribute({ type: 'float'})
+    @attribute({ type: 'float' })
         exchange_rate?: number
 
-    @attribute({ type: 'float'})
+    @attribute({ type: 'float' })
         discount?: number
 
-    @attribute({ type: 'float'})
+    @attribute({ type: 'float' })
         actual_price?: number
     
-    @attribute({ type: 'string'})
+    @attribute({ type: 'string' })
         remark?: string
     
 }

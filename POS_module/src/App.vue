@@ -8,7 +8,6 @@ export default {
   data() {
     const items: Array<Item> = [];
     const barcodes: Array<number> = [];
-    const prices: Array<number> = [];
     const counts: Array<number> = [];
     const subTotal: Array<number> = [];
     const itemnames: Array<string> = [];
@@ -17,14 +16,11 @@ export default {
     var totalprice: number = 0;
     const changeprices: Array<number> = [];
     const members: Array<Member> = [];
-    const allitemnames: Array<string> = [];
-
     const results: Array<string> = []
 
     return {
       items,
       barcodes,
-      prices,
       counts,
       subTotal,
       itemnames,
@@ -38,31 +34,25 @@ export default {
       price: "",
       stock: "",
       phonenumber: "",
+      phonenumber_static: "",
       membername: "",
       id: "",
-      allitemnames,
       results,
       isOpen: false,
       arrowCounter: -1,
       actualIncome: "",
       payment: "cash",
       bill: false,
-      isMember: false
+      isMember: false,
+      focusonname: false,
+      focusfind: false,
+      online: false
     }
   },
-  mounted() {
-    this.additemname()
-  },
   methods: {
-    async additemname() {
-      const db = new Database()
-      let temparray = await db.all(Item)
-      this.allitemnames = temparray.map(item => item.name)
-    },
     async add(item: Item){
       this.items.push(item)
       this.barcodes.push(item.barcode!)
-      this.prices.push(item.price!)
       this.counts.push(1)
       this.subTotal.push(item.price!)
       this.itemnames.push(item.name!)
@@ -76,58 +66,81 @@ export default {
       const index = this.barcodes.indexOf(Number(this.barcode))
       if(index >= 0){
         this.counts[index] += 1
+        this.calprice(index)
+        this.id = String(this.items[index].id)
+        this.stock = String(this.items[index].stock)
+        this.itemname = String(this.items[index].name)
       }
       else{
         let query = QueryBuilder.equal("barcode", Number(this.barcode))
         let found = await db.find(Item, query)
         if (found[0]){
           this.add(found[0])
+          this.id = found[0].id
+          this.itemname = found[0].name
           this.price = found[0].price
           this.stock = found[0].stock
         }
+        else{
+          this.removeinfo()          
+        }
       }
-      this.barcode = ""
     },
     async findID() {
       const db = new Database()
       const index = this.IDs.indexOf(Number(this.id))
       if(index >= 0){
         this.counts[index] += 1
+        this.calprice(index)
+        this.barcode = String(this.items[index].barcode)
+        this.itemname = String(this.items[index].name)
+        this.price = String(this.items[index].price)
+        this.stock = String(this.items[index].stock)
       }
       else{
         let query = QueryBuilder.equal("id", this.id)
         let found = await db.find(Item, query)
         if (found[0]){
           this.add(found[0])
+          this.barcode = found[0].barcode
+          this.itemname = found[0].name
           this.price = found[0].price
           this.stock = found[0].stock
         }
+        else{
+          this.removeinfo()          
+        }
       }
-      this.id = ""
     },
     async findName(){
       const db = new Database()
       const index = this.itemnames.indexOf(this.itemname)
       if(index >= 0){
         this.counts[index] += 1
+        this.calprice(index)
+        this.barcode = String(this.items[index].barcode)
+        this.id = String(this.IDs[index])        
+        this.price = String(this.items[index].price)
+        this.stock = String(this.items[index].stock)
       }
       else{
         let query = QueryBuilder.equal("name", this.itemname)
-        
         let found = await db.find(Item, query)
         if (found[0]){
           this.add(found[0])
+          this.barcode = found[0].barcode
+          this.id = found[0].id
           this.price = found[0].price
           this.stock = found[0].stock
         }
+        else{
+          this.removeinfo()     
+        }
       }
-      this.itemname = ""
-
     },
     async remove(index: number) {
       this.items.splice(index, 1)
       this.barcodes.splice(index, 1)
-      this.prices.splice(index, 1)
       this.counts.splice(index, 1)
       this.subTotal.splice(index, 1)
       this.itemnames.splice(index, 1)
@@ -142,7 +155,6 @@ export default {
     async removeall(){
       this.items = []
       this.barcodes = []
-      this.prices = []
       this.counts = []
       this.subTotal = []
       this.itemnames = []
@@ -166,9 +178,9 @@ export default {
       this.updatetotalprice()
     },
     async calprice(index: number){
-      let subtotalprice = Number(this.counts[index]) * Number(this.prices[index])
+      let subtotalprice = Number(this.counts[index]) * Number(this.items[index].price)
       if(this.changeprices[index]){
-        subtotalprice = (this.prices[index] - this.changeprices[index]) * this.counts[index]
+        subtotalprice = (Number(this.items[index].price) - this.changeprices[index]) * this.counts[index]
         this.updateprice(subtotalprice, index)
       }
       else{
@@ -178,12 +190,18 @@ export default {
     async findmember(){
       const db = new Database()
       let query = QueryBuilder.equal("phone_number", this.phonenumber)
-      this.phonenumber = ""
       let found = await db.find(Member, query)
       if (found[0]){
         this.membername = found[0].name
         this.isMember = true
+        this.phonenumber_static = this.phonenumber
       }
+      else{
+        this.isMember = false
+        this.membername = ""
+        this.phonenumber_static = ""
+      }
+      this.phonenumber = ""
     },
     async countAdd(index: number){
       this.counts[index] = Number(this.counts[index])
@@ -194,25 +212,6 @@ export default {
       this.counts[index] = Number(this.counts[index])
       this.counts[index] -= 1
       this.calprice(index)
-    },
-    async testadd(){
-      for(var i = 1; i < 8; i++){
-        const testitem: Item = new Item()
-        testitem.barcode = i
-        testitem.name = "test" + String(i)
-        testitem.price = i * i
-        this.items.push(testitem)
-        this.barcodes.push(i)
-        this.prices.push(i * i)
-        this.counts.push(1)
-        this.subTotal.push(i * i)
-        this.IDs.push(i)
-        this.changeprices.push()
-      }
-      this.totalprice = 0
-      for(var i = 0; i < this.subTotal.length; i++){
-        this.totalprice += this.subTotal[i]
-      }
     },
     async testadditem(){
       const item1 = new Item()
@@ -240,6 +239,14 @@ export default {
       item3.stock = 82
 
       await db.save(Item, item3)
+
+      const item4 = new Item()
+      item4.barcode = 4
+      item4.name = "袁4欣"
+      item4.price = 9273
+      item4.stock = 67
+
+      await db.save(Item, item4)
     },
     async testaddmember(){
       const member1 = new Member()
@@ -267,11 +274,10 @@ export default {
       if (vm.results.length !== 0) {
         vm.itemname = result;
         vm.arrowCounter = -1;
-        vm.isOpen = false;
       }
     },
     async onArrowDown() {
-      if (this.arrowCounter < this.results.length) {
+      if (this.arrowCounter < this.results.length - 1) {
         this.arrowCounter = this.arrowCounter + 1;
       }
     },
@@ -283,45 +289,46 @@ export default {
     async onEnter() {
       var vm = this;
       if (vm.isOpen) {
-        vm.itemname = vm.results[vm.arrowCounter];
-        vm.arrowCounter = -1;
-        vm.isOpen = false;
+        if(vm.arrowCounter != -1){
+          vm.itemname = vm.results[vm.arrowCounter];
+          vm.arrowCounter = -1;
+        }
       }
+      vm.isOpen = false;
     },
     async filterResults() {
-      /*
       let db = new Database()
-      let query = QueryBuilder.like('name', '%' + vm.itemname + '%')
-      this.results = await db.find(Item, query)
-      */
-      // like 修好直接刪掉
-      var vm = this;
-      this.results = vm.allitemnames.filter(function (item, index, array) {
-        return item.indexOf(vm.itemname) > -1;
-      })
+      let query = QueryBuilder.like('name', '%' + this.itemname + '%')
+      let found = await db.find(Item, query)
+      this.results = found.map(x => x.name)
     },
     async complete(){
       if(this.actualIncome != ""){
-        const deal = new Deal()
-        let time = '20230206'
-        deal.time = time
-        let len = this.items.length
-        const db = new Database()
-        /*
-        const member = new Member()
-        member.phone_number = this.phonenumber
-        member.name = this.membername
         
-        if(this.phonenumber != ''){
-          deal.member = member
-        }*/
-        for(let i = 0; i <= len; i++){
-          // to do : item
+        let time = '20230206'
+        
+        let len = this.items.length
+        
+        for(let i = 0; i < len; i++){
+          const db= new Database()
+          const deal = new Deal()
+          deal.time = time
+          if(this.membername != ''){
+            let query = QueryBuilder.equal("phone_number", this.phonenumber_static)
+            const db2 = new Database()
+            let found = await db2.find(Member, query)
+            let tmp = found[0]
+            deal.member = tmp
+          }
+
+          let name =  String(this.itemnames[i])
+          let query = QueryBuilder.equal("name", name)
+          let found = await db.find(Item, query)
+          let tmp = found[0]
+          deal.item = tmp
           deal.stock_change = -1 * this.counts[i]
-          console.log(this.counts)
-          // to do : member
-          deal.pricing = this.prices[i]
-          console.log(this.prices)
+
+          deal.pricing = this.items[i].price
           
           deal.exchange_rate = 1
           if(this.changeprices[i]){
@@ -330,12 +337,13 @@ export default {
           else{
             deal.discount = 0
           }
-          
+
           deal.actual_price = this.subTotal[i]
+
           deal.remark = ""
-          db.save(Deal, deal)
+
+          await db.save(Deal, deal)
         }
-        console.log(db.all(Deal))
         this.resetall()
       }
     },
@@ -353,10 +361,13 @@ export default {
       this.actualIncome = ""
       this.payment = "cash"
       this.bill = false,
-      this.isMember = false
+      this.isMember = false,
+      this.focusonname = false,
+      this.focusfind = false,
+      this.online = false
     },
     async paymentChange(){
-      if(this.payment == 'creditCard'){
+      if(this.payment == 'creditCard' || this.payment == 'payonline'){
         this.bill = true
         this.updatetotalprice()
       }
@@ -375,13 +386,14 @@ export default {
     async removeMember(){
       this.membername = ''
       this.isMember = false
+      this.phonenumber_static = ""
     },
     async onlyNumberAndDash(evt: KeyboardEvent): Promise<void>{
       const keysAllowed: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-'];
       const keyPressed: string = evt.key;
     
       if (!keysAllowed.includes(keyPressed)) {
-            evt.preventDefault()
+        evt.preventDefault()
       }
     },
     async onlyNumber(evt: KeyboardEvent): Promise<void>{
@@ -389,23 +401,43 @@ export default {
       const keyPressed: string = evt.key;
     
       if (!keysAllowed.includes(keyPressed)) {
-            evt.preventDefault()
+        evt.preventDefault()
       }
+    },
+    async focusnamein(){
+      this.focusonname = true
+    },
+    async focusnameout(){
+      this.focusonname = false
+    },
+    async focusin(){
+      this.removeinfo()
+    },
+    async removeinfo(){
+      this.barcode = ""
+      this.id = ""
+      this.itemname = ""
+      this.price = ""
+      this.stock = ""
+    },
+    async closefilter(){
+      this.isOpen = false;
     }
   },
 
   watch: {
     itemname() {
       if (this.itemname !== "") {
-        this.filterResults();
-        this.isOpen = true;
+        if(this.focusonname == true){
+          this.filterResults();
+          this.isOpen = true;
+        }
       } else {
         this.isOpen = false;
+        this.removeinfo()
       }
     }
-    
   }
-
 }
 </script>
 
@@ -415,11 +447,11 @@ export default {
       <div class="d-flex flex-column col-4 border rounded bg-white text-dark m-2 p-2">
         <div class="d-flex">
           <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>條碼</b></h3>
-          <input type="text" class="align-self-center form-control me-2 m-0" placeholder="條碼" v-model="barcode" @keyup.enter="findBarcode" @keypress="onlyNumberAndDash($event)">
+          <input type="text" class="align-self-center form-control me-2 m-0" placeholder="條碼" v-model="barcode" @keyup.enter="findBarcode" @keypress="onlyNumberAndDash($event)" @focus="focusin" @click="focusin">
         </div>
         <div class="d-flex">
           <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>I D</b></h3>
-          <input onkeyup="this.value=this.value.replace(/\D/g,'')" type="text" class="align-self-center form-control me-2 m-0" placeholder="ID" v-model="id" @keyup.enter="findID" @keypress="onlyNumber($event)">
+          <input onkeyup="this.value=this.value.replace(/\D/g,'')" type="text" class="align-self-center form-control me-2 m-0" placeholder="ID" v-model="id" @keyup.enter="findID" @keypress="onlyNumber($event)" @focus="focusin"  @click="focusin">
         </div>
         <div class="d-flex">
           <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>名稱</b></h3>
@@ -429,16 +461,19 @@ export default {
               @keydown.up.prevent="onArrowUp"
               @keydown.down.prevent="onArrowDown"
               @keydown.enter.prevent="onEnter" 
-              placeholder="名稱" 
-              @keyup.enter="findName"
+              placeholder="名稱"
+              @keyup.enter="findName(); closefilter();"
+              @focus="focusin"
+              @focusin="focusnamein"
+              @focusout="focusnameout"
                />
             <ul v-show="isOpen" class="list-group mb-3 position-absolute top-100 z-index-3 w-100 text-break">
               <li v-for="(result, i) in results"
                 :key="i"
                 class="list-group-item"
-                @mouseup.left.prevent="setResult(result)"
+                @mousedown.left.prevent="setResult(result)"
                 @mouseover="arrowCounter = i"
-                @mouseup.left="findName"
+                @mouseup.left="findName(); closefilter()"
                 :class="{'active': i === arrowCounter}">{{ result }}
               </li>
             </ul>
@@ -523,13 +558,23 @@ export default {
           <select class="form-select" aria-label="pay" v-model="payment" @change="paymentChange">
             <option value="cash">現金</option>
             <option value="creditCard">信用卡</option>
+            <option value="payonline">電子支付</option>
+            <option value="transfer">轉帳</option>
           </select>
-          <div class="form-check align-self-center col-5 m-0 ms-4">
+          <div class="col-5">
+            <div class="form-check m-0 ms-4">
               <input class="form-check-input" type="checkbox" value="receipt" id="receipt1" v-model="bill" @change="changebill">
               <label class="form-check-label" for="receipt1">
-                開立發票(金額加上營業稅 5 %)
+                金額加上營業稅 5 %
               </label>
             </div>
+            <div class="form-check m-0 ms-4">
+              <input class="form-check-input" type="checkbox" value="online" id="online1" v-model="online">
+              <label class="form-check-label" for="online1">
+                網站通路銷售
+              </label>
+            </div>
+          </div>
         </div>
         <div>
           <button type="button" class="btn btn-success me-3" @click="complete">完成</button>
