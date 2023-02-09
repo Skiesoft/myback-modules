@@ -474,7 +474,7 @@ export default defineComponent ({
                 class="list-group-item"
                 @mousedown.left.prevent="setResult(result)"
                 @mouseover="arrowCounter = i"
-                @mouseup.left="findName(); closefilter()"
+                @mouseup.left="findName(); closefilter();"
                 :class="{'active': i === arrowCounter}">{{ result }}
               </li>
             </ul>
