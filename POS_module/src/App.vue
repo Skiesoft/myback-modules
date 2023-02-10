@@ -1,43 +1,35 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
-import { Item } from './model/item'
+import { Order } from './model/order'
+import { Product } from './model/product'
 import { Member } from './model/member'
-import { Deal } from './model/deal'
+import { OrderItem } from './model/orderItem'
 
 export default defineComponent ({
   data() {
-    const items: Array<Item> = [];
-    const barcodes: Array<number> = [];
+    const products: Array<Product> = [];
     const counts: Array<number> = [];
     const subTotal: Array<number> = [];
-    const itemnames: Array<string> = [];
     const reasons: Array<string> = [];
-    const IDs: Array<number> = [];
-    var totalprice: number = 0;
     const changeprices: Array<number> = [];
-    const members: Array<Member> = [];
     const results: Array<string> = []
 
     return {
-      items,
-      barcodes,
+      products,
       counts,
       subTotal,
-      itemnames,
       reasons,
-      IDs,
-      totalprice,
+      totalprice: 0,
       changeprices,
-      members,
-      barcode: "",
-      itemname: "",
+      upc: "",
+      id: "",
+      productname: "",
       price: "",
       stock: "",
       phonenumber: "",
-      phonenumber_static: "",
+      phonenumber_now: "",
       membername: "",
-      id: "",
       results,
       isOpen: false,
       arrowCounter: -1,
@@ -51,34 +43,32 @@ export default defineComponent ({
     }
   },
   methods: {
-    async add(item: Item){
-      this.items.push(item)
-      this.barcodes.push(item.barcode!)
+    async add(product: Product){
+      this.products.push(product)
       this.counts.push(1)
-      this.subTotal.push(item.price!)
-      this.itemnames.push(item.name!)
-      this.IDs.push(item.id!)
+      this.subTotal.push(product.price!)
       this.reasons.push("")
       this.changeprices.push()
       this.updatetotalprice()
     },
-    async findBarcode() {
+    async findupc() {
       const db = new Database()
-      const index = this.barcodes.indexOf(Number(this.barcode))
+      const index = this.products.map(e => e.upc).indexOf(this.upc)
       if(index >= 0){
         this.counts[index] += 1
         this.calprice(index)
-        this.id = String(this.items[index].id)
-        this.stock = String(this.items[index].stock)
-        this.itemname = String(this.items[index].name)
+        this.id = String(this.products[index].id)
+        this.productname = String(this.products[index].name)
+        this.price = String(this.products[index].price)
+        this.stock = String(this.products[index].stock)
       }
       else{
-        let query = QueryBuilder.equal("barcode", Number(this.barcode))
-        let found = await db.find(Item, query)
+        let query = QueryBuilder.equal("upc", this.upc)
+        let found = await db.find(Product, query)
         if (found[0]){
           this.add(found[0])
           this.id = found[0].id
-          this.itemname = found[0].name
+          this.productname = found[0].name
           this.price = found[0].price
           this.stock = found[0].stock
         }
@@ -89,22 +79,22 @@ export default defineComponent ({
     },
     async findID() {
       const db = new Database()
-      const index = this.IDs.indexOf(Number(this.id))
+      const index = this.products.map(e => e.id).indexOf(Number(this.id))
       if(index >= 0){
         this.counts[index] += 1
         this.calprice(index)
-        this.barcode = String(this.items[index].barcode)
-        this.itemname = String(this.items[index].name)
-        this.price = String(this.items[index].price)
-        this.stock = String(this.items[index].stock)
+        this.upc = String(this.products[index].upc)
+        this.productname = String(this.products[index].name)
+        this.price = String(this.products[index].price)
+        this.stock = String(this.products[index].stock)
       }
       else{
         let query = QueryBuilder.equal("id", this.id)
-        let found = await db.find(Item, query)
+        let found = await db.find(Product, query)
         if (found[0]){
           this.add(found[0])
-          this.barcode = found[0].barcode
-          this.itemname = found[0].name
+          this.upc = found[0].upc
+          this.productname = found[0].name
           this.price = found[0].price
           this.stock = found[0].stock
         }
@@ -115,21 +105,21 @@ export default defineComponent ({
     },
     async findName(){
       const db = new Database()
-      const index = this.itemnames.indexOf(this.itemname)
+      const index = this.products.map(e => e.name).indexOf(this.productname)
       if(index >= 0){
         this.counts[index] += 1
         this.calprice(index)
-        this.barcode = String(this.items[index].barcode)
-        this.id = String(this.IDs[index])        
-        this.price = String(this.items[index].price)
-        this.stock = String(this.items[index].stock)
+        this.upc = String(this.products[index].upc)
+        this.id = String(this.products[index].id)        
+        this.price = String(this.products[index].price)
+        this.stock = String(this.products[index].stock)
       }
       else{
-        let query = QueryBuilder.equal("name", this.itemname)
-        let found = await db.find(Item, query)
+        let query = QueryBuilder.equal("name", this.productname)
+        let found = await db.find(Product, query)
         if (found[0]){
           this.add(found[0])
-          this.barcode = found[0].barcode
+          this.upc = found[0].upc
           this.id = found[0].id
           this.price = found[0].price
           this.stock = found[0].stock
@@ -140,12 +130,9 @@ export default defineComponent ({
       }
     },
     async remove(index: number) {
-      this.items.splice(index, 1)
-      this.barcodes.splice(index, 1)
+      this.products.splice(index, 1)
       this.counts.splice(index, 1)
       this.subTotal.splice(index, 1)
-      this.itemnames.splice(index, 1)
-      this.IDs.splice(index, 1)
       this.reasons.splice(index, 1)
       this.totalprice = 0
       this.changeprices.splice(index, 1)
@@ -154,12 +141,9 @@ export default defineComponent ({
       }
     },
     async removeall(){
-      this.items = []
-      this.barcodes = []
+      this.products = []
       this.counts = []
       this.subTotal = []
-      this.itemnames = []
-      this.IDs = []
       this.reasons = []
       this.changeprices = []
       this.totalprice = 0
@@ -179,9 +163,9 @@ export default defineComponent ({
       this.updatetotalprice()
     },
     async calprice(index: number){
-      let subtotalprice = Number(this.counts[index]) * Number(this.items[index].price)
+      let subtotalprice = Number(this.counts[index]) * Number(this.products[index].price)
       if(this.changeprices[index]){
-        subtotalprice = (Number(this.items[index].price) - this.changeprices[index]) * this.counts[index]
+        subtotalprice = (Number(this.products[index].price) - this.changeprices[index]) * this.counts[index]
         this.updateprice(subtotalprice, index)
       }
       else{
@@ -195,12 +179,12 @@ export default defineComponent ({
       if (found[0]){
         this.membername = found[0].name
         this.isMember = true
-        this.phonenumber_static = this.phonenumber
+        this.phonenumber_now = this.phonenumber
       }
       else{
         this.isMember = false
         this.membername = ""
-        this.phonenumber_static = ""
+        this.phonenumber_now = ""
       }
       this.phonenumber = ""
     },
@@ -214,67 +198,56 @@ export default defineComponent ({
       this.counts[index] -= 1
       this.calprice(index)
     },
-    async testadditem(){
-      const item1 = new Item()
+    async testaddproduct(){
+      let namelst: Array<string> = ['宇宙戰艦大和號2199 - 獨立戰鬥指揮艦 Deusula The 2nd Core Ship (1/1000)',
+        '艦隊これくしょん SPM - ”霞改二-礼号作戰-”',
+        'M.S.G. D-721 - 關節、軸棒、關節固定座 3 [黑]',
+        'Figure-rise-S - Masked Rider Den-O Sword Form & Plat Form 電王 劍模式 & 月台模式',
+        'Figure-rise-S - Masked Rider Den-O Rod Form & Plat Form 電王 杖模式 & 月台模式',
+        'Figure-rise-S - Masked Rider Den-O AX Form & Plat Form 電王 斧模式 & 月台模式',
+        'Figure-rise-S - Masked Rider Den-O Gun Form & Plat Form 電王 槍模式 & 月台模式',
+        'CL#005 Mine bluE#010 - [妄想…原付と、女の子と、桃源鄉]',
+        '情景モジルパーツ - 色粉-深綠',
+        'G.F.F. Metal Composite #1013 - RX0[N] Unicorn Gundam 02 Banshee Norn[Awakening Ver.](ROUSE DRIVE)',
+        '袁 & 1','袁 - 1','袁 [ 1','袁 ] 1','袁 > 1','袁 < 1','袁 # 1','袁 " 1','袁 ” 1','袁 ( 1','袁 ) 1','袁 / 1','袁 . 1']
+      for(let i = 1; i <= namelst.length; i++){
+        const product = new Product()
 
-      item1.barcode = 1
-      item1.name = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-      item1.price = 27
-      item1.stock = 3
+        product.upc = String(i)
+        product.name = namelst[i]
+        product.category = ""
+        product.status = ""
+        product.create_time = new Date()
+        product.manufacturer = ""
+        product.unit = ""
+        product.weight = 0
+        product.length = 0
+        product.width = 0
+        product.height = 0
+        product.info = ""
+        product.price = Math.ceil((Math.random()) * 100)
+        product.note = ""
+        product.stock = Math.ceil((Math.random()) * 10)
 
-      const db = new Database()
-      await db.save(Item, item1)
-
-      const item2 = new Item()
-      item2.barcode = 2
-      item2.name = "袁2欣"
-      item2.price = 1835
-      item2.stock = 7
-
-      await db.save(Item, item2)
-
-      const item3 = new Item()
-      item3.barcode = 3
-      item3.name = "袁3欣"
-      item3.price = 15347
-      item3.stock = 82
-
-      await db.save(Item, item3)
-
-      const item4 = new Item()
-      item4.barcode = 4
-      item4.name = "袁4欣"
-      item4.price = 9273
-      item4.stock = 67
-
-      await db.save(Item, item4)
+        const db = new Database()
+        await db.save(Product, product)
+      }
     },
     async testaddmember(){
-      const member1 = new Member()
-      const member2 = new Member()
-      const member3 = new Member()
-      const db = new Database()
-
-      member1.phone_number = "0987654321"
-      member1.name = '王小明'
-
-      await db.save(Member, member1)
-
-      member2.phone_number = "0912345678"
-      member2.name = '王小美'
-
-      await db.save(Member, member2)
-
-      member3.phone_number = "0974185263"
-      member3.name = '王大明'
-
-      await db.save(Member, member3)
+      let phonenumbers = ["0987654321", "0912345678", "0974185263"]
+      let names = ['王小明', '王小美', '王大明']
+      for(let i = 0; i < phonenumbers.length; i++){
+        const member = new Member()
+        member.phone_number = phonenumbers[i]
+        member.name = names[i]
+        const db = new Database()
+        await db.save(Member, member)
+      }
     },
     async setResult(result: string) {
-      var vm = this;
-      if (vm.results.length !== 0) {
-        vm.itemname = result;
-        vm.arrowCounter = -1;
+      if (this.results.length !== 0) {
+        this.productname = result;
+        this.arrowCounter = -1;
       }
     },
     async onArrowDown() {
@@ -288,75 +261,69 @@ export default defineComponent ({
       }
     },
     async onEnter() {
-      var vm = this;
-      if (vm.isOpen) {
-        if(vm.arrowCounter != -1){
-          vm.itemname = vm.results[vm.arrowCounter];
-          vm.arrowCounter = -1;
+      if (this.isOpen) {
+        if(this.arrowCounter != -1){
+          this.productname = this.results[this.arrowCounter];
+          this.arrowCounter = -1;
         }
       }
-      vm.isOpen = false;
+      this.isOpen = false;
     },
     async filterResults() {
       let db = new Database()
-      let query = QueryBuilder.like('name', '%' + this.itemname + '%')
-      let found = await db.find(Item, query)
+      let query = QueryBuilder.like('name', '%' + this.productname + '%')
+      let found = await db.find(Product, query)
       this.results = found.map(x => x.name)
     },
     async complete(){
       if(this.actualIncome != ""){
-        
-        let time = '20230206'
-        
-        let len = this.items.length
-        
+        const time = new Date()
+        const order = new Order()
+        let len = this.products.length      
+        let id = -1;
+        order.time = time
+        order.amount = Number(this.actualIncome)
+        order.internet_marketing = (this.online ? 1 : 0)
+        if(this.membername != ''){
+          let query = QueryBuilder.equal("phone_number", this.phonenumber_now)
+          const db = new Database()
+          let found = await db.find(Member, query)
+          if(found[0]){
+            order.member = found[0]
+          }
+        }
+        const db = new Database()
+        await db.save(Order, order)
+
         for(let i = 0; i < len; i++){
           const db= new Database()
-          const deal = new Deal()
-          deal.time = time
-          if(this.membername != ''){
-            let query = QueryBuilder.equal("phone_number", this.phonenumber_static)
-            const db2 = new Database()
-            let found = await db2.find(Member, query)
-            let tmp = found[0]
-            deal.member = tmp
-          }
-
-          let name =  String(this.itemnames[i])
-          let query = QueryBuilder.equal("name", name)
-          let found = await db.find(Item, query)
-          let tmp = found[0]
-          deal.item = tmp
-          deal.stock_change = -1 * this.counts[i]
-
-          deal.pricing = this.items[i].price
+          const orderitem = new OrderItem()
           
-          deal.exchange_rate = 1
-          if(this.changeprices[i]){
-            deal.discount = this.changeprices[i]
-          }
-          else{
-            deal.discount = 0
-          }
+          let name =  String(this.products[i].name)
+          let query = QueryBuilder.equal("name", name)
+          let found = await db.find(Product, query)
+          
+          orderitem.id = order.id
+          orderitem.product = found[0]
+          orderitem.stock_change = -1 * this.counts[i]
+          orderitem.labled_price = this.products[i].price
+          orderitem.exchange_rate = 1
+          orderitem.discount = (this.changeprices[i] > 0 ?  this.changeprices[i] : 0)
+          orderitem.actual_price = this.subTotal[i]
+          orderitem.note = ""
 
-          deal.actual_price = this.subTotal[i]
-
-          deal.remark = ""
-
-          await db.save(Deal, deal)
+          await db.save(OrderItem, orderitem)
         }
+        
         this.resetall()
       }
     },
     async resetall(){
       this.removeall()
-      this.barcode = ""
-      this.itemname = ""
-      this.price = ""
-      this.stock = ""
+      this.removeinfo()
       this.phonenumber = ""
+      this.phonenumber_now = ""
       this.membername = ""
-      this.id = ""
       this.isOpen = false
       this.arrowCounter = -1
       this.actualIncome = ""
@@ -370,38 +337,38 @@ export default defineComponent ({
     async paymentChange(){
       if(this.payment == 'creditCard' || this.payment == 'payonline'){
         this.bill = true
-        this.updatetotalprice()
       }
       else{
         this.bill = false
-        this.updatetotalprice()
       }
-    },
-    async changebill(){
       this.updatetotalprice()
     },
-    async showdb(){
+    async showorderitem(){
       let db = new Database()
-      console.log(await db.all(Deal))
+      console.log(await db.all(OrderItem))
+    },
+    async showorder(){
+      let db = new Database()
+      console.log(await db.all(Order))
     },
     async removeMember(){
       this.membername = ''
       this.isMember = false
-      this.phonenumber_static = ""
+      this.phonenumber_now = ""
     },
     async onlyNumberAndDash(evt: KeyboardEvent): Promise<void>{
-      const keysAllowed: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-'];
+      const keysAllowed: RegExp = /[0-9-]/g;
       const keyPressed: string = evt.key;
     
-      if (!keysAllowed.includes(keyPressed)) {
+      if (!keysAllowed.exec(keyPressed)) {
         evt.preventDefault()
       }
     },
     async onlyNumber(evt: KeyboardEvent): Promise<void>{
-      const keysAllowed: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+      const keysAllowed: RegExp = /[0-9]/g
       const keyPressed: string = evt.key;
     
-      if (!keysAllowed.includes(keyPressed)) {
+      if (!keysAllowed.exec(keyPressed)) {
         evt.preventDefault()
       }
     },
@@ -410,14 +377,15 @@ export default defineComponent ({
     },
     async focusnameout(){
       this.focusonname = false
+      this.isOpen = false
     },
     async focusin(){
       this.removeinfo()
     },
     async removeinfo(){
-      this.barcode = ""
+      this.upc = ""
       this.id = ""
-      this.itemname = ""
+      this.productname = ""
       this.price = ""
       this.stock = ""
     },
@@ -427,8 +395,8 @@ export default defineComponent ({
   },
 
   watch: {
-    itemname() {
-      if (this.itemname !== "") {
+    productname() {
+      if (this.productname !== "") {
         if(this.focusonname == true){
           this.filterResults();
           this.isOpen = true;
@@ -444,11 +412,11 @@ export default defineComponent ({
 
 <template>
   <div class="d-flex flex-wrap">
-    <div class="w-100 d-flex block">
+    <div class="w-100 d-flex" style="height: 76vh;">
       <div class="d-flex flex-column col-4 border rounded bg-white text-dark m-2 p-2">
         <div class="d-flex">
           <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>條碼</b></h3>
-          <input type="text" class="align-self-center form-control me-2 m-0" placeholder="條碼" v-model="barcode" @keyup.enter="findBarcode" @keypress="onlyNumberAndDash($event)" @focus="focusin" @click="focusin">
+          <input type="text" class="align-self-center form-control me-2 m-0" placeholder="條碼" v-model="upc" @keyup.enter="findupc" @keypress="onlyNumberAndDash($event)" @focus="focusin" @click="focusin">
         </div>
         <div class="d-flex">
           <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>I D</b></h3>
@@ -458,7 +426,7 @@ export default defineComponent ({
           <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>名稱</b></h3>
           <div class="align-self-center position-relative w-100 me-2">
             <input type="search" class="form-control me-2 m-0"
-              v-model="itemname"
+              v-model="productname"
               @keydown.up.prevent="onArrowUp"
               @keydown.down.prevent="onArrowDown"
               @keydown.enter.prevent="onEnter" 
@@ -468,13 +436,13 @@ export default defineComponent ({
               @focusin="focusnamein"
               @focusout="focusnameout"
                />
-            <ul v-show="isOpen" class="list-group mb-3 position-absolute top-100 z-index-3 w-100 text-break">
+            <ul v-show="isOpen" class="list-group mb-3 position-absolute top-100 z-index-3 w-100 text-break" style="overflow: auto; height: 75vh">
               <li v-for="(result, i) in results"
                 :key="i"
                 class="list-group-item"
-                @mousedown.left.prevent="setResult(result)"
+                @mousedown="setResult(result); findName();"
                 @mouseover="arrowCounter = i"
-                @mouseup.left="findName(); closefilter();"
+                @mouseup.left="closefilter();"
                 :class="{'active': i === arrowCounter}">{{ result }}
               </li>
             </ul>
@@ -489,10 +457,10 @@ export default defineComponent ({
           <h3 class="m-2 ms-0 p-0">{{ stock }}</h3>
         </div>
 
-        <div><button type="button" @click="testadditem">add item to db</button></div>
+        <div><button type="button" @click="testaddproduct">add product to db</button></div>
         <div><button type="button" @click="testaddmember">add member to db</button></div>
-        <div><button type="button" @click="showdb">show db</button></div>
-
+        <div><button type="button" @click="showorderitem">show orederitem</button></div>
+        <div><button type="button" @click="showorder">show order</button></div>
 
         <div class="d-flex justify-content-center" style="height:30%;"><img src=""></div>
         <div class="d-flex justify-content-center" style="height:30%"><img src=""></div>
@@ -509,11 +477,11 @@ export default defineComponent ({
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in items" :key="index">
-              <th scope="row"><h5 class="p-0 text-break">{{ item.name }}</h5></th>
+            <tr v-for="(product, index) in products" :key="index">
+              <th scope="row"><h5 class="p-0 text-break">{{ product.name }}</h5></th>
               <td>
                 <div class="d-flex">
-                  <h4 class="align-self-center m-0 col-2">{{ item.price }}</h4>
+                  <h4 class="align-self-center m-0 col-2">{{ product.price }}</h4>
                   <div class="d-flex">
                     <input type="text" class="align-self-center form-control form-control-sm h-25" v-model="changeprices[index]" placeholder="折價差額" @input="calprice(index)"  @keypress="onlyNumber($event)"/>
                     <input type="text" class="align-self-center form-control form-control-sm h-25 ms-1" placeholder="原因" v-model="reasons[index]">
@@ -564,7 +532,7 @@ export default defineComponent ({
           </select>
           <div class="col-5">
             <div class="form-check m-0 ms-4">
-              <input class="form-check-input" type="checkbox" value="receipt" id="receipt1" v-model="bill" @change="changebill">
+              <input class="form-check-input" type="checkbox" value="receipt" id="receipt1" v-model="bill" @change="updatetotalprice()">
               <label class="form-check-label" for="receipt1">
                 金額加上營業稅 5 %
               </label>
@@ -622,10 +590,6 @@ body {
   height: 100%;
   padding: 0;
   margin: 0;
-}
-
-.block {
-    height: 76vh;
 }
 .tableFixHead          { overflow: auto;}
 .tableFixHead thead th { position: sticky; top: 0; z-index: 1; background-color: #FFFFFF;}
