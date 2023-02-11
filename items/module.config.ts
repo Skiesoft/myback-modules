@@ -1,10 +1,10 @@
 import { Member } from './src/model/member'
-import { Item } from './src/model/item'
-import { Transaction } from './src/model/transaction'
+import { Product } from './src/model/product'
+import { OrderItem } from './src/model/orderitem'
 import { Order } from './src/model/order'
 
 module.exports = {
   name: 'Simple Todo List',
   description: 'Example module of a simple todo list.',
-  models: [Member, Item, Transaction, Order]
+  models: [Member, Product, OrderItem, Order]
 }

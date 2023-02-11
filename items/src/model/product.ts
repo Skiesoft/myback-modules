@@ -1,7 +1,7 @@
 import { Model, attribute } from '@myback/sdk'
     
-export class Item extends Model {
-    protected static tableName: string = 'items'
+export class Product extends Model {
+    protected static tableName: string = 'products'
 
     @attribute({ type: 'int', primary: true, autoIndex: true})
         id?: number
@@ -22,11 +22,10 @@ export class Item extends Model {
         status?: string
 
     @attribute({ type: 'date'})
-        create_time?: string
+        create_time?: Date
 
     @attribute({ type: 'string'})
         manufacturer?: string
-
 
     @attribute({ type: 'string'})
         unit?: string
@@ -50,14 +49,17 @@ export class Item extends Model {
         price?: number
 
     @attribute({ type: 'string'})
-        remark?: string
+        note?: string
 
     @attribute({ type: 'int'})
-        plan_on_ordering?: number
+        plan_on_ordering: number = 0
 
     @attribute({ type: 'int'})
-        ordered?: number
+        ordered: number = 0
 
     @attribute({ type: 'int'})
         stock?: number
+
+    @attribute({ type: 'string' , nullable: true})
+        image_string?: string
 }

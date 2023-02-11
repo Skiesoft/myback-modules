@@ -8,7 +8,7 @@ export class Order extends Model {
         id?: number
 
     @attribute({ type: 'datetime' })
-        time?: string
+        time?: Date
 
     @attribute({ type: 'string', nullable: true})
         importer?: string
@@ -18,4 +18,7 @@ export class Order extends Model {
 
     @attribute({ type: 'int' })
         amount?: number
+
+    @attribute({ type: 'int'})
+        internet_marketing?: number
 }
