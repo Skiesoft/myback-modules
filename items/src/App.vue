@@ -1,13 +1,13 @@
 <script lang="ts">
+  import { defineComponent } from 'vue'
   import LineChart from './components/Chart.vue'
   import { Product } from './model/product'
   import { Order } from './model/order'
   import { OrderItem } from './model/orderItem'
   import { Database, QueryBuilder, Storage} from '@myback/sdk'
-  //import { FileInformation } from '@myback/sdk/src/api/storage'
   import * as bootstrap from 'bootstrap'
 
-  export default {
+  export default defineComponent ({
   name: 'App',
   data(){
     const page_size: number = 9
@@ -554,7 +554,7 @@
     }
   },
   components: { LineChart }
-  }
+  })
 
 
 </script>
@@ -983,7 +983,7 @@
               </div>
             </div>
             <div class="d-flex flex-wrap mt-1">
-              <div v-for="name in this.pictures">
+              <div v-for="name in pictures">
                 <div class="align-item-start d-flex">
                   <img class="m-1" v-bind:src="'http://localhost:3000/v1/storage/default/file/'+name" style="width:400px">
                   <i class="bi bi-x" style="font-size: 25px; right: 25px" type="button" @click="pictureRemove(name)"></i> 

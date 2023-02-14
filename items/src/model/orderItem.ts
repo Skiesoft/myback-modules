@@ -14,7 +14,7 @@ export class OrderItem extends Model {
         stock_change?: number
 
     @attribute({ type: 'float'})
-        labled_price?: number
+        labeled_price?: number
 
     @attribute({ type: 'float'})
         exchange_rate?: number
