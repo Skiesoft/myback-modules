@@ -15,12 +15,19 @@
     const page_list_starter: number = 1
     const total_page: number = 0
     const page_list: Array<number> = []
+    const page_sold_out_starter: number = 1
+    const page_sold_out: Array<number> = []
+    const total_page_sold_out: number = 0
+    const current_page_sold_out: number = 1
+    const page_size_sold_out: number = 4
     const list_product_count: number = 0;
+    const sold_out_product_count: number = 0
 
     const products: Array<Product> = [];
     const product_editting: Product|null = null;
     let delete_product: Product|null;
     
+    const sold_out_products: Array<Product> = []
 
     const sort_element: string = 'id'
     const sort_order: string = 'asc'
@@ -46,6 +53,7 @@
     const info: string = ''
     const note: string = ''
 
+
     let pictures:Array<string> = []
     const tobeDelete:Array<string> = []
 
@@ -69,11 +77,18 @@
       page_list_starter,
       total_page,
       page_list,
+      page_sold_out_starter,
+      page_sold_out,
+      total_page_sold_out,
+      current_page_sold_out,
+      page_size_sold_out,
       list_product_count,
+      sold_out_product_count,
 
       products,
       product_editting,
       
+      sold_out_products,
 
       sort_element,
       sort_order,
@@ -122,6 +137,8 @@
   mounted(){
     this.updateList()
     this.updatePageList()
+    this.updateProduct()
+    this.updatePageProduct()
   },
   methods: {
     async changePage(page: number){
@@ -130,8 +147,18 @@
       document.getElementById("page"+String(this.current_page))?.classList.add('active')
       this.updateList()
     },
+    async changePageProduct(page: number){
+      document.getElementById('product_page' + String(this.current_page_sold_out))?.classList.remove('active')
+      this.current_page_sold_out = page
+      document.getElementById("product_page" + String(this.current_page_sold_out))?.classList.add('active')
+      this.updateProduct()
+    },
     async activateCurrentPage(){
       let page = document.getElementById("page"+String(this.current_page))
+      page?.classList.add('active')
+    },
+    async activateCurrentPageProduct(){
+      let page = document.getElementById('product_page'+String(this.current_page_sold_out))
       page?.classList.add('active')
     },
     async updatePageList(){
@@ -150,6 +177,21 @@
         
       }  
     },
+    async updatePageProduct(){
+      for(let page in this.page_sold_out){
+        document.getElementById('product_page'+String(page))?.classList.remove('active')
+      }
+
+      this.page_sold_out = []
+      for(let i = 0; i < 3; i++){
+        if(this.page_sold_out_starter + i > this.total_page_sold_out){
+          await new Promise(f => setTimeout(f, 1))
+          await this.activateCurrentPageProduct()
+          return
+        }
+        this.page_sold_out.push(this.page_sold_out_starter + i)
+      }
+    },
     async nextPageList(){
       if(this.page_list_starter + 3 > this.total_page){
         return
@@ -164,6 +206,21 @@
       }
       this.page_list_starter -= 3
       this.updatePageList()
+    },
+
+    async nextPageProduct(){
+      if(this.page_sold_out_starter + 3 > this.total_page_sold_out){
+        return
+      }
+      this.page_list_starter += 3
+      this.updatePageProduct()
+    },
+    async prevPageProduct(){
+      if(this.page_sold_out_starter - 3 < 0){
+        return
+      }
+      this.page_sold_out_starter -= 3
+      this.updatePageProduct()
     },
 
     async updateTotalCost(){
@@ -213,7 +270,15 @@
       this.total_page = Math.ceil(this.list_product_count/this.page_size)
       await this.updatePageList()
     },
+    async updateProduct(){
+      const db = new Database()
 
+      let query = QueryBuilder.equal('status', '缺貨中')
+      this.sold_out_products = await db.find(Product, query, this.current_page_sold_out - 1, this.page_size_sold_out)
+      this.sold_out_product_count = await db.count(Product, query)
+      this.total_page_sold_out = Math.ceil(this.sold_out_product_count / this.page_size_sold_out)
+      await this.updatePageProduct()
+    },
 
     infoInput(product: Product){
       product.name = this.name
@@ -292,6 +357,7 @@
         await this.editProductInfo()
         this.clear()
         this.updateList()
+        this.updateProduct()
         return
       }
 
@@ -299,6 +365,7 @@
         await this.saveProduct()
         this.clear()
         this.updateList()
+        this.updateProduct()
         return
       }
 
@@ -339,7 +406,7 @@
       orderItem.id = order.id
       orderItem.product = product
       orderItem.stock_change = this.stock
-      orderItem.labled_price = this.labled_price
+      orderItem.labeled_price = this.labled_price
       orderItem.exchange_rate = this.exchange_rate
       orderItem.discount = this.discount
       orderItem.actual_price = this.labled_price*this.exchange_rate+this.discount
@@ -409,6 +476,19 @@
       
 
       document.getElementById('stock_input')?.setAttribute('disabled','')
+    },
+    async loadSoldOutProduct(product: Product){
+      this.name = product.name
+      this.category = product.category
+
+      const db = new Database()
+      let query = QueryBuilder.equal('name', String(product.name))
+      let found_product = await db.find(Product, query)
+      query = QueryBuilder.equal('product', found_product[0].id)
+      let found_orderitem = await db.find(OrderItem, query)
+      query = QueryBuilder.equal('id', found_orderitem[0].id)
+      let found_order = await db.find(Order, query)
+      this.importer = found_order[0].importer
     },
     getdate(date: Date){
       let dd = String(date.getDate()).padStart(2, '0')
@@ -490,6 +570,11 @@
       
       bootstrap.Modal.getOrCreateInstance(document.getElementById('addProductModal')).show()
 
+    },
+    async openSoldOutInfo(product: Product){
+      await this.clear()
+      await this.loadSoldOutProduct(product)
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('infoModal')).show()
     },
     async clearImage(){
       const storage = new Storage()
@@ -585,16 +670,16 @@
 
         <nav class="m-3">
           <ul class="pagination">
-            <li class="page-item">
-              <a class="page-link" href="#" aria-label="Previous">
+            <li class="page-product">
+              <a class="page-link" @click="prevPageProduct()">
                 <span aria-hidden="true">&laquo;</span>
               </a>
             </li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-              <a class="page-link" href="#" aria-label="Next">
+            <div class="d-flex" v-for="page in page_sold_out">
+              <li class="page-product"  :id="'product_page' + page"><button class="page-link rounded-0" href="#" @click="changePageProduct(page)">{{ page }}</button></li>
+            </div>
+            <li class="page-product">
+              <a class="page-link" href="#" @click="nextPageProduct()">
                 <span aria-hidden="true">&raquo;</span>
               </a>
             </li>
@@ -604,56 +689,18 @@
 
       <table class="table table-borderless justify-content-center m-3">
         <tbody class="d-flex flex-wrap">
-          <tr class="d-flex col-7">
-            <td class="col-5 p-1">名稱: ABCD</td>
-            <td class="col-3 p-1">分類: ABCD</td>
-            <td class="col-3 p-1">進口商: ABCDE</td>
+          <tr v-for="product in sold_out_products" class="d-flex col-7">
+            <td class="col-5 p-1">名稱: {{ product.name }}</td>
+            <td class="col-3 p-1">分類: {{ product.category }}</td>
+            <td class="col-3 p-1">進口商: {{ product.manufacturer }}</td>
             <td class="col-5 p-1">完售時間: 2021/01/01</td>
             <td class="col-3 p-1">
-              <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#infoModal">
+              <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#infoModal" @click="loadSoldOutProduct(product)">
                 顯示詳細資訊
               </button>
             </td>
             <td class="col-3 p-1"><i class="bi bi-x " style="font-size: 20px"></i></td>
           </tr>
-          <tr class="d-flex col-7">
-            <td class="col-5 p-1">名稱: ABCD</td>
-            <td class="col-3 p-1">分類: ABCD</td>
-            <td class="col-3 p-1">進口商: ABCDE</td>
-            <td class="col-5 p-1">完售時間: 2021/01/01</td>
-            <td class="col-3 p-1">
-              <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#infoModal">
-                顯示詳細資訊
-              </button>
-            </td>
-            <td class="col-3 p-1"><i class="bi bi-x " style="font-size: 20px"></i></td>
-          </tr>
-          <tr class="d-flex col-7">
-            <td class="col-5 p-1">名稱: ABCD</td>
-            <td class="col-3 p-1">分類: ABCD</td>
-            <td class="col-3 p-1">進口商: ABCDE</td>
-            <td class="col-5 p-1">完售時間: 2021/01/01</td>
-            <td class="col-3 p-1">
-              <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#infoModal">
-                顯示詳細資訊
-              </button>
-            </td>
-            <td class="col-3 p-1"><i class="bi bi-x " style="font-size: 20px"></i></td>
-          </tr>
-          <tr class="d-flex col-7">
-            <td class="col-5 p-1">名稱: ABCD</td>
-            <td class="col-3 p-1">分類: ABCD</td>
-            <td class="col-3 p-1">進口商: ABCDE</td>
-            <td class="col-5 p-1">完售時間: 2021/01/01</td>
-            <td class="col-3 p-1">
-              <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#infoModal">
-                顯示詳細資訊
-              </button>
-            </td>
-            <td class="col-3 p-1"><i class="bi bi-x " style="font-size: 20px"></i></td>
-          </tr>
-          
-          
         </tbody>
       </table>
     </div>
@@ -783,9 +830,9 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h6>名稱: 12345</h6>
-            <h6>分類: 12345</h6>
-            <h6>進口商: 12345</h6>
+            <h6>名稱: {{ name }}</h6>
+            <h6>分類: {{ category }}</h6>
+            <h6>進口商: {{ importer }}</h6>
           </div>
           <div class="modal-body">
             
