@@ -28,9 +28,11 @@
     let delete_product: Product|null;
     
     const sold_out_products: Array<Product> = []
+    const sold_out_dates: Array<Date> = []
+    const sold_out_importers: Array<String> = []
 
     const sort_element: string = 'id'
-    const sort_order: string = 'asc'
+    const sort_order: string = 'asc';
 
 
     const total_products: number = 0
@@ -89,6 +91,8 @@
       product_editting,
       
       sold_out_products,
+      sold_out_dates,
+      sold_out_importers,
 
       sort_element,
       sort_order,
@@ -212,7 +216,7 @@
       if(this.page_sold_out_starter + 3 > this.total_page_sold_out){
         return
       }
-      this.page_list_starter += 3
+      this.page_sold_out_starter += 3
       this.updatePageProduct()
     },
     async prevPageProduct(){
@@ -231,17 +235,16 @@
       for(let i = 0; i < products.length; i++){
         
         let stock = products[i].stock
-        //let query_list = [QueryBuilder.equal('product', products[i]),QueryBuilder.greaterThan('stock_change', 0)]
-        const query = QueryBuilder.and(query_list)
-        const orders = await db.find(OrderItem, query, 0, 100)
-        window.alert(orders)
+        let query_list = [QueryBuilder.equal('product', products[i].id), QueryBuilder.greaterThan('stock_change', 0)]
+        const query = QueryBuilder.and(...query_list)
+        const orders = await db.find(OrderItem, query)
         let idx = orders.length - 1
         while(stock > 0){
           if(stock > orders[idx].stock_change){
             sum += orders[idx].stock_change * orders[idx].actual_price
           }
           else{
-            sum += stock*orders[idx].actual_price
+            sum += stock * orders[idx].actual_price
           }
             
           stock -= orders[idx].stock_change
@@ -254,7 +257,7 @@
 
     async updateList() {
       const db = new Database()
-      //this.updateTotalCost()
+      this.updateTotalCost()
       this.total_products = await db.sum(Product, 'stock')
 
 
@@ -263,11 +266,11 @@
         query = QueryBuilder.orderBy(QueryBuilder.greaterThan('id', -1), this.sort_element, this.sort_order)
       }
       else{
-        query = QueryBuilder.orderBy(QueryBuilder.like('name', '%'+this.search_target+'%'), this.sort_element, this.sort_order) 
+        query = QueryBuilder.orderBy(QueryBuilder.like('name', '%' + this.search_target + '%'), this.sort_element, this.sort_order) 
       }
-      this.products = await db.find(Product, query, this.current_page-1, this.page_size)
+      this.products = await db.find(Product, query, this.current_page - 1, this.page_size)
       this.list_product_count = await db.count(Product, query)
-      this.total_page = Math.ceil(this.list_product_count/this.page_size)
+      this.total_page = Math.ceil(this.list_product_count / this.page_size)
       await this.updatePageList()
     },
     async updateProduct(){
@@ -277,6 +280,21 @@
       this.sold_out_products = await db.find(Product, query, this.current_page_sold_out - 1, this.page_size_sold_out)
       this.sold_out_product_count = await db.count(Product, query)
       this.total_page_sold_out = Math.ceil(this.sold_out_product_count / this.page_size_sold_out)
+
+      this.sold_out_dates = []
+      this.sold_out_importers = []
+      for(let i = 0; i < this.sold_out_products.length; i++){
+        let query = QueryBuilder.equal('product', Number(this.sold_out_products[i].id))
+        let orderitem = await db.find(OrderItem, query)
+        let idx = orderitem.length - 1
+        if(orderitem[idx]){
+          query = QueryBuilder.equal('id', orderitem[idx].id)
+          let order = await db.find(Order, query)
+          this.sold_out_dates[i] = order[0].time.split('T')[0]
+          this.sold_out_importers[i] = order[0].importer
+        }
+      }
+
       await this.updatePageProduct()
     },
 
@@ -440,35 +458,35 @@
 
       const storage = new Storage()
       
-      if(this.delete_product.image_string != null){
-        let images = this.delete_product.image_string.split('/')
+      // if(this.delete_product.image_string != null){
+      //   let images = this.delete_product.image_string.split('/')
 
-        for(let i = 0; i < images.length; i++){
-          await storage.destroy(images[i])
-        }
-      }
-      
+      //   for(let i = 0; i < images.length; i++){
+      //     await storage.destroy(images[i])
+      //   }
+      // }
+
       await db.destroy(Product, this.delete_product)
       bootstrap.Modal.getInstance(document.getElementById('deletecConfirmModal')).hide()
       this.updateList()
     },
 
     async load(product: Product) {
-      this.name = product.name
-      this.serial_number = product.serial_number
-      this.upc = product.upc
-      this.category_tags = product.category.split('/')
-      this.status = product.status
-      this.manufacturer = product.manufacturer
-      this.unit = product.unit
-      this.weight = product.weight
-      this.length = product.length
-      this.width = product.width
-      this.height = product.height
-      this.info = product.info
-      this.price = product.price
-      this.note = product.note
-      this.stock = product.stock
+      this.name = String(product.name)
+      this.serial_number = String(product.serial_number)
+      this.upc = String(product.upc)
+      this.category_tags = String(product.category).split('/')
+      this.status = String(product.status)
+      this.manufacturer = String(product.manufacturer)
+      this.unit = String(product.unit)
+      this.weight = Number(product.weight)
+      this.length = Number(product.length)
+      this.width = Number(product.width)
+      this.height = Number(product.height)
+      this.info = String(product.info)
+      this.price = Number(product.price)
+      this.note = String(product.note)
+      this.stock = Number(product.stock)
 
       if(product.image_string != null) {
         this.pictures = product.image_string.split('/')
@@ -477,18 +495,12 @@
 
       document.getElementById('stock_input')?.setAttribute('disabled','')
     },
-    async loadSoldOutProduct(product: Product){
+    async loadSoldOutProduct(product: Product, index: number){
       this.name = product.name
       this.category = product.category
+      this.importer = this.sold_out_importers[index]
 
-      const db = new Database()
-      let query = QueryBuilder.equal('name', String(product.name))
-      let found_product = await db.find(Product, query)
-      query = QueryBuilder.equal('product', found_product[0].id)
-      let found_orderitem = await db.find(OrderItem, query)
-      query = QueryBuilder.equal('id', found_orderitem[0].id)
-      let found_order = await db.find(Order, query)
-      this.importer = found_order[0].importer
+      
     },
     getdate(date: Date){
       let dd = String(date.getDate()).padStart(2, '0')
@@ -571,9 +583,9 @@
       bootstrap.Modal.getOrCreateInstance(document.getElementById('addProductModal')).show()
 
     },
-    async openSoldOutInfo(product: Product){
+    async openSoldOutInfo(product: Product, index: number){
       await this.clear()
-      await this.loadSoldOutProduct(product)
+      await this.loadSoldOutProduct(product, index)
       bootstrap.Modal.getOrCreateInstance(document.getElementById('infoModal')).show()
     },
     async clearImage(){
@@ -636,6 +648,15 @@
 
       await storage.destroy(filename)
       this.pictures.splice(index, 1)
+    },
+    async removeSoldOutProduct(product: Product) {
+      product.status = '絕版（或不再進貨）'
+      const db = new Database()
+      await db.save(Product, product)
+      this.updateList()
+      this.updatePageList()
+      this.updateProduct()
+      this.updatePageProduct()
     }
   },
   components: { LineChart }
@@ -689,17 +710,17 @@
 
       <table class="table table-borderless justify-content-center m-3">
         <tbody class="d-flex flex-wrap">
-          <tr v-for="product in sold_out_products" class="d-flex col-7">
+          <tr v-for="(product, i) in sold_out_products" :key="i" class="d-flex col-7">
             <td class="col-5 p-1">名稱: {{ product.name }}</td>
             <td class="col-3 p-1">分類: {{ product.category }}</td>
-            <td class="col-3 p-1">進口商: {{ product.manufacturer }}</td>
-            <td class="col-5 p-1">完售時間: 2021/01/01</td>
-            <td class="col-3 p-1">
-              <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#infoModal" @click="loadSoldOutProduct(product)">
+            <td class="col-3 p-1">進口商: {{ sold_out_importers[i] }}</td>
+            <td class="col-5 p-1">完售時間: {{ sold_out_dates[i] }}</td>
+            <td class="col-3 p-1 pe-0">
+              <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#infoModal" @click="openSoldOutInfo(product, i)">
                 顯示詳細資訊
               </button>
             </td>
-            <td class="col-3 p-1"><i class="bi bi-x " style="font-size: 20px"></i></td>
+            <td class="col-1 p-0"><button class="btn btn-outline-danger btn-sm" @click="removeSoldOutProduct(product)"><i class="bi bi-x " style="font-size: 20px"></i></button></td>
           </tr>
         </tbody>
       </table>
@@ -820,7 +841,7 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-danger" @click="deleteProduct()">確認刪除</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-            
+
           </div>
         </div>
       </div>
@@ -1032,8 +1053,8 @@
             <div class="d-flex flex-wrap mt-1">
               <div v-for="name in pictures">
                 <div class="align-item-start d-flex">
-                  <img class="m-1" v-bind:src="'http://localhost:3000/v1/storage/default/file/'+name" style="width:400px">
-                  <i class="bi bi-x" style="font-size: 25px; right: 25px" type="button" @click="pictureRemove(name)"></i> 
+                  <!--img class="m-1" v-bind:src="'http://localhost:8080/v1/storage/default/file/'+name" style="width:400px">
+                  <i class="bi bi-x" style="font-size: 25px; right: 25px" type="button" @click="pictureRemove(name)"></i--> 
                 </div>
               </div>
             </div>
