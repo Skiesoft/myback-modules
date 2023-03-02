@@ -1,6 +1,9 @@
 <script lang="ts">
   import { defineComponent } from 'vue'
   import LineChart from './components/Chart.vue'
+  import TotalProduct from './components/TotalProduct.vue'
+  import TotalCost from './components/TotalCost.vue'
+  import ProductTable from './components/ProductTable/ProductTable.vue'
   import { Product } from './model/product'
   import { Order } from './model/order'
   import { OrderItem } from './model/orderItem'
@@ -71,7 +74,6 @@
     const exchange_rate: number = 0
     const discount: number = 0
     const actual_price: number = 0
-
 
     return {
       page_size,
@@ -257,9 +259,9 @@
 
     async updateList() {
       const db = new Database()
-      this.updateTotalCost()
-      this.total_products = await db.sum(Product, 'stock')
-
+      
+      this.$refs.totalProduct.update()
+      this.$refs.totalCost.update()
 
       let query
       if(this.search_target == ''){
@@ -543,7 +545,7 @@
       this.tobeDelete = []
     },
 
-    async sort(element: string){
+    async sorwt(element: string){
       let prev_element = document.getElementById(this.sort_element)
       prev_element?.classList.remove('sortUp')
       prev_element?.classList.remove('sortDown')
@@ -659,29 +661,17 @@
       this.updatePageProduct()
     }
   },
-  components: { LineChart }
+  components: { LineChart, TotalProduct, TotalCost, ProductTable}
   })
 
 
 </script>
 
 <template>
-  <div class="d-flex flex-wrap">
-    <div class="col-2 box border rounded mb-2 mt-2 me-2 d-flex justify-content-center" style="height:100px">
-      <i class="bi-box m-3" style="font-size: 40px"></i>
-      <div class="ms-1 mt-4 me-1">
-        <h6>商品數量</h6> 
-        <h5>{{ total_products }}</h5>
-      </div>
-    </div>
+  <div class="d-flex flex-wrap m-4 mt-1 mb-0" >
+    <TotalProduct ref="totalProduct"/>
 
-    <div class="col-2 box border rounded m-2 d-flex justify-content-center" style="height:100px">
-      <i class="bi-coin mt-3 me-3" style="font-size: 40px"></i>
-      <div class="ms-1 mt-4 me-1">
-        <h6>成本總額</h6> 
-        <h5>{{ total_cost }}</h5>
-      </div>
-    </div>
+    <TotalCost ref="totalCost"/>
 
     <div class="col-7 box ms-2 mb-2 mt-2 flex-grow-1" style="height:250px">
       <div class="d-flex" style="height:60px">
@@ -726,127 +716,10 @@
       </table>
     </div>
 
-    <div class="col-12 box justify-content-center p-4" style="height:450px">
-      <div class="justify-content-between d-flex">
-        <div class="col-4 d-flex">
-          <h4 class="fw-bold mt-1">
-              商品列表
-          </h4>
-
-          <nav class="ms-3" style="height:40px">
-            <ul class="pagination">
-              <li class="page-item">
-                <button class="page-link" @click="prevPageList()">
-                  <span aria-hidden="true">&laquo;</span>
-                </button>
-              </li>
-              <div class="d-flex" v-for="page in page_list">
-                <li class="page-item"  :id="'page' + page"><button class="page-link rounded-0" href="#" @click="changePage(page)">{{ page }}</button></li>
-              </div>
-              <li class="page-item">
-                <button class="page-link" href="#" @click="nextPageList()">
-                  <span aria-hidden="true">&raquo;</span>
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-
-        <div class="col-4  d-flex">
-          <input @input="updateList()" type="text" class="form-control" placeholder="Search" v-model="search_target">
-          <button type="button" class="btn btn-primary ms-3 col-3 fw-bold" style="background: #3B587A;" @click="open()">新增商品</button>
-        </div>
-      </div>
-      
-
-      <div class="d-flex container mt-3">
-        <div class="me-5 fw-bold d-flex align-items-center">
-          Id
-          <div id="id" class="d-flex flex-column ms-1 sortUp" @click="sort('id')" type="button">
-            <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px;" ></i></div>
-            <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px" ></i></div>
-          </div>
-        </div>
-        <div class="col-2 fw-bold d-flex align-items-center me-2">
-          Name
-          <div id="name" class="d-flex flex-column ms-1" @click="sort('name')" type="button">
-            <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
-           <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px"></i></div>
-          </div>
-        </div>
-        <div class="col fw-bold d-flex align-items-center">
-          category
-          <div id="category" class="d-flex flex-column ms-1">
-          </div>
-        </div>
-        <div class="col fw-bold d-flex align-items-center">
-          Status
-          <div id="status" class="d-flex flex-column ms-1" @click="sort('status') " type="button">
-            <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
-           <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px"></i></div>
-          </div>
-        </div>
-        <div class="col fw-bold d-flex align-items-center">
-          In-stock
-          <div id="stock" class="d-flex flex-column ms-1" @click="sort('stock')" type="button">
-            <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
-            <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px"></i></div>
-          </div>
-        </div>
-        <div class="col fw-bold d-flex align-items-center">
-          Add-time
-          <div id="create_time" class="d-flex flex-column ms-1" @click="sort('create_time')" type="button">
-            <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
-            <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px"></i></div>
-          </div>
-        </div>
-        <div class="col fw-bold d-flex align-items-center">
-          製造商
-          <div id="manufacturer" class="d-flex flex-column ms-1" @click="sort('manufacturer')" type="button">
-            <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
-            <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px" ></i></div>
-          </div>
-        </div>
-        <div class="col"></div>
-      </div>
-
-      <hr class="border border-dark opacity-100  m-2" />
-
-      <div v-for="product in products">
-        <div class="d-flex container mt-2">
-          <div class="me-5" style="width: 31px">{{ product.id }}</div>
-          <div class="col-2 overflowhidden me-2">{{ product.name }}</div>
-          <div class="col overflowhidden">{{ product.category }}</div>
-          <div class="col">{{ product.status }}</div>
-          <div class="col">{{ product.stock }}</div>
-          <div class="col">{{ product.create_time.split('T')[0] }}</div>
-          <div class="col">{{ product.manufacturer }}</div>
-          <div class="d-flex col">
-            <button class="link" style="color: #3B587A" @click="openExistedProduct(product)">Edit</button>
-            <button class="link link-danger ms-1" @click="deleteConfirm(product)">Delete</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
+    <ProductTable/>
   </div>
 
   <!-- Modal -->
-    <div class="modal fade" id="deletecConfirmModal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-body">
-            <h3 class="fw-bold">您確定要刪除這項商品嗎?</h3>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-danger" @click="deleteProduct()">確認刪除</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="modal fade" id="infoModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -975,107 +848,7 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="modal fade" id="addProductModal" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="align-items-center justify-content-between d-flex">
-            <h4 class="fw-bold m-3 mb-1">商品資訊</h4>
-            <button type="button" class="btn-close m-3 mb-1" data-bs-dismiss="modal"></button>
-          </div>
-          <hr class="border border-secondary opacity-100  m-1" />
-          <div class="m-3 mt-1 flex-col">
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">名稱</h6>
-              <input type="text" class="form-control p-1" v-model="name">
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">編號</h6>
-              <input type="text" class="form-control p-1" v-model="serial_number">
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">條碼</h6>
-              <input type="text" class="form-control p-1" v-model="upc">
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">分類</h6>
-              <input type="text" class="form-control p-1" v-model="category" @keyup.enter="addTag()">
-            </div>
-            <div class="d-flex align-items-center mt-1">
-              <div class="col-3"></div>
-              <div class="d-flex flex-wrap">
-                <div v-for="tag in category_tags">
-                  <div class="d-flex border ps-2 pe-2 m-1 ms-0 border-dark rounded-3 justify-content-between align-items-center" type="button" @click="removeTag(tag)"><div class="m-1">{{ tag }}</div><i class="bi bi-x" style="font-size: 20px"></i></div>
-                </div>
-              </div>
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">狀態</h6>
-              <div class="col-6">
-              <select class="form-select" v-model="status">
-                <option selected>待進貨</option>
-                <option>銷售中</option>
-                <option>缺貨中</option>
-                <option>絕版（或不再進貨）</option>
-              </select>
-              </div>
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">製造商</h6>
-              <input type="text" class="form-control p-1"  v-model="manufacturer">
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">定價</h6>
-              <input type="number" class="form-control p-1" v-model="price">
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">單位</h6>
-              <input type="text" class="form-control p-1" v-model="unit">
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">重量</h6>
-              <input type="number" class="form-control p-1" v-model="weight">
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">尺寸</h6>
-              <input type="number" class="form-control p-1" v-model="length">
-              <input type="number" class="form-control p-1 ms-1" v-model="width">
-              <input type="number" class="form-control p-1 ms-1" v-model="height">
-            </div>
-            <div class="d-flex align-items-start mt-2 flex-wrap flex-col">
-              <h6 class="col-3 m-0 pt-1 pb-1">圖片</h6>
-              <div class="input-group mt-1 mb-3 col-12">
-                <input type="file" class="form-control" id="inputFile" accept="image/*" multiple="multiple" @change="pictureUpload()">
-                <label class="input-group-text" for="inputFile">選擇檔案</label>
-              </div>
-            </div>
-            <div class="d-flex flex-wrap mt-1">
-              <div v-for="name in pictures">
-                <div class="align-item-start d-flex">
-                  <!--img class="m-1" v-bind:src="'http://localhost:8080/v1/storage/default/file/'+name" style="width:400px">
-                  <i class="bi bi-x" style="font-size: 25px; right: 25px" type="button" @click="pictureRemove(name)"></i--> 
-                </div>
-              </div>
-            </div>
-            <div class="d-flex align-items-start mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">商品描述</h6>
-              <textarea class="form-control" v-model="info"></textarea>
-            </div>
-            <div class="d-flex align-items-start mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1" >備註</h6>
-              <textarea class="form-control" v-model="note"></textarea>
-            </div>
-            <div class="d-flex align-items-center mt-2">
-              <h6 class="col-3 m-0 pt-1 pb-1">庫存數量</h6>
-              <input id="stock_input" type="number" class="form-control p-1" v-model="stock">
-            </div>
-            <div class="d-flex justify-content-end mt-2"> 
-              <button type="submit" class="btn btn-primary ms-3 col-2 fw-bold" style="background: #3B587A;" @click="divide()">Save</button>
-            </div>
-          </div >
-      </div>
-    </div>
+    
   </div>
 
   
@@ -1131,6 +904,10 @@
     -webkit-appearance: none;
     border: none;
     border:0px;
+  }
+
+  .mainPage {
+    background-color: #f5f5f5;
   }
 
 </style>
