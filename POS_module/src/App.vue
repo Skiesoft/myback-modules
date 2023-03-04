@@ -5,10 +5,10 @@ import { Order } from './model/order'
 import { Product } from './model/product'
 import { Member } from './model/member'
 import { OrderItem } from './model/orderItem'
-import ProductList from './component/ProductList.vue'
-import ProductInfo from './component/ProductInfo.vue'
-import MemberSearch from './component/MemberSearch.vue'
-import Payment from './component/Payment.vue'
+import ProductList from './components/ProductList.vue'
+import ProductInfo from './components/ProductInfo.vue'
+import MemberSearch from './components/MemberSearch.vue'
+import Payment from './components/Payment.vue'
 
 export default defineComponent ({
   setup(){
