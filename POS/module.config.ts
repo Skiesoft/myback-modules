@@ -4,7 +4,7 @@ import { Member } from './src/model/member'
 import { OrderItem } from './src/model/orderItem'
 
 module.exports = {
-  name: 'Simple Todo List',
-  description: 'Example module of a simple todo list.',
+  name: 'POS',
+  description: 'Point of sale system for cashier.',
   models: [Order, Product, Member, OrderItem]
 }

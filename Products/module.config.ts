@@ -5,6 +5,6 @@ import { Product } from './src/model/product'
 
 module.exports = {
   name: 'Product',
-  description: 'Example module of a simple todo list.',
+  description: 'Manage Product items.',
   models: [Member, Order, OrderItem, Product]
 }
