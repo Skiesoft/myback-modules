@@ -20,5 +20,5 @@ export class Order extends Model {
         amount?: number
 
     @attribute({ type: 'int'})
-        internet_marketing?: number
+        internet_marketing: number = 0
 }
