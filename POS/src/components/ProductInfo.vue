@@ -3,8 +3,6 @@ import { defineComponent } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
 import { Product } from '../model/product'
 import { Member } from '../model/member'
-import { OrderItem } from '../model/orderItem'
-import { Order } from '../model/order'
 
 export default defineComponent({
   props:['productIn'],
@@ -182,8 +180,11 @@ export default defineComponent({
       let names = ['王小明', '王小美', '王大明']
       for(let i = 0; i < phonenumbers.length; i++){
         const member = new Member()
+        member.role = "VIP"
+        member.email = String(i) + "@skiesoft.com"
         member.phone_number = phonenumbers[i]
         member.name = names[i]
+        member.date = new Date()
         const db = new Database()
         await db.save(Member, member)
       }
