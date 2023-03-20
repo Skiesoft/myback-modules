@@ -83,10 +83,11 @@ export default defineComponent ({
     const counts: Array<number> = [];
 
     return {
+      search: "",
       products,
       counts,
       totalprice: 0,
-      actualIncome: "",
+      actualIncome: ""
     }
   },
   methods: {

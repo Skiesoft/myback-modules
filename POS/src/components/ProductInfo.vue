@@ -11,6 +11,7 @@ export default defineComponent({
   data() {
     const results: Array<string> = []
     return {
+      search: "",
       upc: "",
       id: "",
       productname: "",
@@ -18,92 +19,88 @@ export default defineComponent({
       stock: "",
       results,
       arrowCounter: -1,
-      isOpen: false,
-      focusonname: false
+      isOpen: false
     }
   },
   methods:{
-    async findupc() {
+    async find() {
       const db = new Database()
-      const index = this.productIn.map(function(value: Product){ return value.upc }).indexOf(this.upc)
-      if(index >= 0){
-        this.$emit('addcount', index)
-        this.$emit('calprice',index)
-        this.id = String(this.productIn[index].id)
-        this.productname = String(this.productIn[index].name)
-        this.price = String(this.productIn[index].price)
-        this.stock = String(this.productIn[index].stock)
+      const indexofupc = this.productIn.map(function(value: Product){ return value.upc }).indexOf(this.search)
+      const indexofid = this.productIn.map(function(value: Product){ return value.id }).indexOf(Number(this.search))
+      const indexofname = this.productIn.map(function(value: Product){ return value.name }).indexOf(this.search)
+      if (indexofupc >= 0){
+        this.$emit('addcount', indexofupc)
+        this.$emit('calprice', indexofupc)
+        this.search = ""
+        this.upc = String(this.productIn[indexofupc].upc)
+        this.id = String(this.productIn[indexofupc].id)
+        this.productname = String(this.productIn[indexofupc].name)
+        this.price = String(this.productIn[indexofupc].price)
+        this.stock = String(this.productIn[indexofupc].stock)
+      }
+      else if (indexofid >= 0){
+        this.$emit('addcount', indexofid)
+        this.$emit('calprice',indexofid)
+        this.search = ""
+        this.upc = String(this.productIn[indexofid].upc)
+        this.id = String(this.productIn[indexofid].id)
+        this.productname = String(this.productIn[indexofid].name)
+        this.price = String(this.productIn[indexofid].price)
+        this.stock = String(this.productIn[indexofid].stock)
+      }
+      else if (indexofname >= 0){
+        this.$emit('addcount', indexofname)
+        this.$emit('calprice',indexofname)
+        this.search = ""
+        this.upc = String(this.productIn[indexofname].upc)
+        this.id = String(this.productIn[indexofname].id)
+        this.productname = String(this.productIn[indexofname].name)
+        this.price = String(this.productIn[indexofname].price)
+        this.stock = String(this.productIn[indexofname].stock)
       }
       else{
-        let query = QueryBuilder.equal("upc", this.upc)
-        let found = await db.find(Product, query)
-        if (found[0]){
-          this.$emit('addproduct', found[0])
-          this.id = found[0].id
-          this.productname = found[0].name
-          this.price = found[0].price
-          this.stock = found[0].stock
+        let queryUpc = QueryBuilder.equal("upc", this.search)
+        let foundinupc = await db.find(Product, queryUpc)
+        let queryId = QueryBuilder.equal("id", this.search)
+        let foundinid = await db.find(Product, queryId)
+        let queryName = QueryBuilder.equal("name", this.search)
+        let foundinname = await db.find(Product, queryName)
+        if (foundinupc[0]){
+          this.$emit('addproduct', foundinupc[0])
+          this.search = ""
+          this.upc = foundinupc[0].upc
+          this.id = foundinupc[0].id
+          this.productname = foundinupc[0].name
+          this.price = foundinupc[0].price
+          this.stock = foundinupc[0].stock
+        }
+        else if (foundinid[0]){
+          this.$emit('addproduct', foundinid[0])
+          this.search = ""
+          this.upc = foundinid[0].upc
+          this.id = foundinid[0].id
+          this.productname = foundinid[0].name
+          this.price = foundinid[0].price
+          this.stock = foundinid[0].stock
+        }
+        else if (foundinname[0]){
+          this.$emit('addproduct', foundinname[0])
+          this.search = ""
+          this.upc = foundinname[0].upc
+          this.id = foundinname[0].id
+          this.productname = foundinname[0].name
+          this.price = foundinname[0].price
+          this.stock = foundinname[0].stock
         }
         else{
+          this.search = ""
           this.removeinfo()          
-        }
-      }
-    },
-    async findID() {
-      const db = new Database()
-      const index = this.productIn.map(function(value: Product){ return value.id }).indexOf(Number(this.id))
-      if(index >= 0){
-        this.$emit('addcount', index)
-        this.$emit('calprice',index)
-        this.upc = String(this.productIn[index].upc)
-        this.productname = String(this.productIn[index].name)
-        this.price = String(this.productIn[index].price)
-        this.stock = String(this.productIn[index].stock)
-      }
-      else{
-        let query = QueryBuilder.equal("id", this.id)
-        let found = await db.find(Product, query)
-        if (found[0]){
-          this.$emit('addproduct', found[0])
-          this.upc = found[0].upc
-          this.productname = found[0].name
-          this.price = found[0].price
-          this.stock = found[0].stock
-        }
-        else{
-          this.removeinfo()          
-        }
-      }
-    },
-    async findName(){
-      const db = new Database()
-      const index = this.productIn.map(function(value: Product){ return value.name }).indexOf(this.productname)
-      if(index >= 0){
-        this.$emit('addcount', index)
-        this.$emit('calprice',index)
-        this.upc = String(this.productIn[index].upc)
-        this.id = String(this.productIn[index].id)        
-        this.price = String(this.productIn[index].price)
-        this.stock = String(this.productIn[index].stock)
-      }
-      else{
-        let query = QueryBuilder.equal("name", this.productname)
-        let found = await db.find(Product, query)
-        if (found[0]){
-          this.$emit('addproduct', found[0])
-          this.upc = found[0].upc
-          this.id = found[0].id
-          this.price = found[0].price
-          this.stock = found[0].stock
-        }
-        else{
-          this.removeinfo()     
         }
       }
     },
     async setResult(result: string) {
       if (this.results.length !== 0) {
-        this.productname = result;
+        this.search = result;
         this.arrowCounter = -1;
       }
     },
@@ -120,53 +117,28 @@ export default defineComponent({
     async onEnter() {
       if (this.isOpen) {
         if(this.arrowCounter != -1){
-          this.productname = this.results[this.arrowCounter];
+          this.search = this.results[this.arrowCounter];
           this.arrowCounter = -1;
         }
       }
       this.isOpen = false;
     },
     async removeinfo(){
+      this.search = ""
       this.upc = ""
       this.id = ""
       this.productname = ""
       this.price = ""
       this.stock = ""
     },
-    async focusin(){
-      this.removeinfo()
-    },
-    async onlyNumberAndDash(evt: KeyboardEvent): Promise<void>{
-      const keysAllowed: RegExp = /[0-9-]/g;
-      const keyPressed: string = evt.key;
-    
-      if (!keysAllowed.exec(keyPressed)) {
-        evt.preventDefault()
-      }
-    },
-    async onlyNumber(evt: KeyboardEvent): Promise<void>{
-      const keysAllowed: RegExp = /[0-9]/g
-      const keyPressed: string = evt.key;
-    
-      if (!keysAllowed.exec(keyPressed)) {
-        evt.preventDefault()
-      }
-    },
     async filterResults() {
       let db = new Database()
-      let query = QueryBuilder.like('name', '%' + this.productname + '%')
+      let query = QueryBuilder.like('name', '%' + this.search + '%')
       let found = await db.find(Product, query)
       this.results = found.map(x => x.name)
     },
     async closefilter(){
       this.isOpen = false;
-    },
-    async focusnamein(){
-      this.focusonname = true
-    },
-    async focusnameout(){
-      this.focusonname = false
-      this.isOpen = false
     },
 
     //test function start
@@ -185,7 +157,7 @@ export default defineComponent({
       for(let i = 1; i <= namelst.length; i++){
         const product = new Product()
 
-        product.upc = String(i)
+        product.upc = String(i * 100)
         product.name = namelst[i]
         product.category = ""
         product.status = ""
@@ -205,14 +177,6 @@ export default defineComponent({
         await db.save(Product, product)
       }
     },
-    async showorderitem(){
-      let db = new Database()
-      console.log(await db.all(OrderItem))
-    },
-    async showorder(){
-      let db = new Database()
-      console.log(await db.all(Order))
-    },
     async testaddmember(){
       let phonenumbers = ["0987654321", "0912345678", "0974185263"]
       let names = ['王小明', '王小美', '王大明']
@@ -228,15 +192,13 @@ export default defineComponent({
 
   },
   watch: {
-    productname() {
-      if (this.productname !== "") {
-        if(this.focusonname == true){
-          this.filterResults();
-          this.isOpen = true;
-        }
-      } else {
+    search() {
+      if (this.search !== "") {
+        this.filterResults();
+        this.isOpen = true;
+      }
+      else {
         this.isOpen = false;
-        this.removeinfo()
       }
     }
   }
@@ -246,38 +208,38 @@ export default defineComponent({
 <template>
   <div class="d-flex flex-column col-4 border rounded bg-white text-dark m-2 p-2">
     <div class="d-flex">
-      <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>條碼</b></h3>
-      <input type="text" class="align-self-center form-control me-2 m-0" placeholder="條碼" v-model="upc" @keyup.enter="findupc" @keypress="onlyNumberAndDash($event)" @focus="focusin" @click="focusin">
-    </div>
-    <div class="d-flex">
-      <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>I D</b></h3>
-      <input type="text" class="align-self-center form-control me-2 m-0" placeholder="ID" v-model="id" @keyup.enter="findID" @keypress="onlyNumber($event)" @focus="focusin"  @click="focusin">
-    </div>
-    <div class="d-flex">
-      <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>名稱</b></h3>
+      <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>輸入</b></h3>
       <div class="align-self-center position-relative w-100 me-2">
-        <input type="search" class="form-control me-2 m-0"
-          v-model="productname"
+        <input type="text" class="align-self-center form-control me-2 m-0" placeholder="搜尋" 
+          v-model="search" 
+          @keydown.enter.prevent="onEnter" 
+          @keyup.enter="find(); closefilter();"
           @keydown.up.prevent="onArrowUp"
           @keydown.down.prevent="onArrowDown"
-          @keydown.enter.prevent="onEnter" 
-          placeholder="名稱"
-          @keyup.enter="findName(); closefilter();"
-          @focus="focusin"
-          @focusin="focusnamein"
-          @focusout="focusnameout"
-        />
+        >
         <ul v-show="isOpen" class="list-group mb-3 position-absolute top-100 z-index-3 w-100 text-break" style="overflow: auto; height: 75vh">
           <li v-for="(result, i) in results"
             :key="i"
             class="list-group-item"
-            @mousedown="setResult(result); findName();"
+            @mousedown="setResult(result); find();"
             @mouseover="arrowCounter = i"
             @mouseup.left="closefilter();"
             :class="{'active': i === arrowCounter}">{{ result }}
           </li>
         </ul>
       </div>
+    </div>
+    <div class="d-flex">
+      <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>條碼</b></h3>
+      <h3 class="m-2 ms-0">{{ upc }}</h3>  
+    </div>
+    <div class="d-flex">
+      <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>I D</b></h3>
+      <h3 class="m-2 ms-0">{{ id }}</h3>  
+    </div>
+    <div class="d-flex">
+      <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>名稱</b></h3>
+      <h3 class="m-2 ms-0">{{ productname }}</h3> 
     </div>
     <div class="d-flex">
       <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>訂價</b></h3>
@@ -290,8 +252,6 @@ export default defineComponent({
 
     <div><button type="button" @click="testaddproduct">add product to db</button></div>
     <div><button type="button" @click="testaddmember">add member to db</button></div>
-    <div><button type="button" @click="showorderitem">show orederitem</button></div>
-    <div><button type="button" @click="showorder">show order</button></div>
 
     <div class="d-flex justify-content-center" style="height:30%;"><img src=""></div>
     <div class="d-flex justify-content-center" style="height:30%"><img src=""></div>
