@@ -3,6 +3,8 @@ import { defineComponent } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
 import { Product } from '../model/product'
 import { Member } from '../model/member'
+import { OrderItem } from '../model/orderItem'
+import { Order } from '../model/order'
 
 export default defineComponent({
   props:['productIn'],
@@ -17,7 +19,8 @@ export default defineComponent({
       stock: "",
       results,
       arrowCounter: -1,
-      isOpen: false
+      isOpen: false,
+      required: true
     }
   },
   methods:{
@@ -35,6 +38,7 @@ export default defineComponent({
         this.productname = String(this.productIn[indexofupc].name)
         this.price = String(this.productIn[indexofupc].price)
         this.stock = String(this.productIn[indexofupc].stock)
+        this.required = false
       }
       else if (indexofid >= 0){
         this.$emit('addcount', indexofid)
@@ -45,6 +49,7 @@ export default defineComponent({
         this.productname = String(this.productIn[indexofid].name)
         this.price = String(this.productIn[indexofid].price)
         this.stock = String(this.productIn[indexofid].stock)
+        this.required = false
       }
       else if (indexofname >= 0){
         this.$emit('addcount', indexofname)
@@ -55,6 +60,7 @@ export default defineComponent({
         this.productname = String(this.productIn[indexofname].name)
         this.price = String(this.productIn[indexofname].price)
         this.stock = String(this.productIn[indexofname].stock)
+        this.required = false
       }
       else{
         let queryUpc = QueryBuilder.equal("upc", this.search)
@@ -71,6 +77,7 @@ export default defineComponent({
           this.productname = foundinupc[0].name
           this.price = foundinupc[0].price
           this.stock = foundinupc[0].stock
+          this.required = false
         }
         else if (foundinid[0]){
           this.$emit('addproduct', foundinid[0])
@@ -80,6 +87,7 @@ export default defineComponent({
           this.productname = foundinid[0].name
           this.price = foundinid[0].price
           this.stock = foundinid[0].stock
+          this.required = false
         }
         else if (foundinname[0]){
           this.$emit('addproduct', foundinname[0])
@@ -89,9 +97,11 @@ export default defineComponent({
           this.productname = foundinname[0].name
           this.price = foundinname[0].price
           this.stock = foundinname[0].stock
+          this.required = false
         }
         else{
           this.search = ""
+          this.required = true
           this.removeinfo()          
         }
       }
@@ -180,10 +190,10 @@ export default defineComponent({
       let names = ['王小明', '王小美', '王大明']
       for(let i = 0; i < phonenumbers.length; i++){
         const member = new Member()
-        member.role = "VIP"
-        member.email = String(i) + "@skiesoft.com"
         member.phone_number = phonenumbers[i]
         member.name = names[i]
+        member.role = "VIP"
+        member.email = "test" + String(i) + "@test.com"
         member.date = new Date()
         const db = new Database()
         await db.save(Member, member)
@@ -210,14 +220,14 @@ export default defineComponent({
   <div class="d-flex flex-column col-4 border rounded bg-white text-dark m-2 p-2">
     <div class="d-flex">
       <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>輸入</b></h3>
-      <div class="align-self-center position-relative w-100 me-2">
-        <input type="text" class="align-self-center form-control me-2 m-0" placeholder="搜尋" 
+      <form class="align-self-center position-relative w-100 me-2 was-validated">
+        <input type="text" class="align-self-center form-control me-2 m-0" placeholder="搜尋"
           v-model="search" 
           @keydown.enter.prevent="onEnter" 
           @keyup.enter="find(); closefilter();"
           @keydown.up.prevent="onArrowUp"
           @keydown.down.prevent="onArrowDown"
-        >
+          :required="required">
         <ul v-show="isOpen" class="list-group mb-3 position-absolute top-100 z-index-3 w-100 text-break" style="overflow: auto; height: 75vh">
           <li v-for="(result, i) in results"
             :key="i"
@@ -228,7 +238,7 @@ export default defineComponent({
             :class="{'active': i === arrowCounter}">{{ result }}
           </li>
         </ul>
-      </div>
+      </form>
     </div>
     <div class="d-flex">
       <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>條碼</b></h3>

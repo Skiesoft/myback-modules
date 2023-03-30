@@ -52,8 +52,8 @@ export default defineComponent ({
 
 <template>
   <div class="d-flex ms-3 flex-fill clearfix">
-    <h3 class="col-1 align-self-center m-0">會員:</h3>
-    <div class="col-7"><input type="text" class="form-control" placeholder="0987654321" v-model="phonenumber" @keyup.enter="findmember"  @keypress="onlyNumber($event)"></div>
+    <h3 class="col-2 align-self-center m-0">會員:</h3>
+    <div class="col-6"><input type="text" class="form-control" placeholder="0987654321" v-model="phonenumber" @keyup.enter="findmember"  @keypress="onlyNumber($event)"></div>
     <h3 class="align-self-center m-0 ms-3">名稱：{{ membername }}</h3>
     <button v-show="isMember" class="btn btn-outline-secondary ms-auto" @click="removeMember"><i class="bi bi-x-lg"></i></button>
   </div>
