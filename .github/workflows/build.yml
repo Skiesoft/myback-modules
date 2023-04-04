@@ -1,0 +1,38 @@
+name: Build Modules Bundles 
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        modules: [Products, POS]
+    runs-on: ubuntu-latest    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./${{ matrix.modules }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.modules }}/package-lock.json
+      - run: npm ci
+      - run: npm run build
+        env:
+          NODE_PRESERVE_SYMLINKS: 1
+      - name: Upload module bundle.
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.modules }}
+          path: ${{ matrix.modules }}/dist
