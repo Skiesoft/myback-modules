@@ -31,7 +31,7 @@ export default defineComponent({
 </script>
 <template>
   <div class="d-flex col-6 ms-3">
-    <h3 class="align-self-center m-0 col-2">付款方式:</h3>
+    <h3 class="align-self-center m-0 p-0 col-3">付款方式:</h3>
     <select class="form-select" aria-label="pay" v-model="payment" @change="paymentChange">
       <option value="cash">現金</option>
       <option value="creditCard">信用卡</option>
