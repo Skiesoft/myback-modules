@@ -1,0 +1,29 @@
+{
+  "name": "myback-modules",
+  "version": "1.0.0",
+  "description": "Meta package for repository.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Skiesoft/myback-modules.git"
+  },
+  "author": "Skiesoft Corporation",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Skiesoft/myback-modules/issues"
+  },
+  "homepage": "https://github.com/Skiesoft/myback-modules#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "eslint": "^8.38.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-vue": "^9.10.0"
+  }
+}
