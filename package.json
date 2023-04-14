@@ -4,7 +4,7 @@
   "description": "Meta package for repository.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "fix-style": "npx eslint . --fix --ext .ts,.vue"
   },
   "repository": {
     "type": "git",
