@@ -5,8 +5,8 @@
   import TotalCost from './components/TotalCost.vue'
   import ProductTable from './components/ProductTable/ProductTable.vue'
   import { Product } from './model/product'
-  import { Order } from './model/order'
-  import { OrderItem } from './model/orderItem'
+  import { Transaction } from './model/transaction'
+  import { TransactionItem } from './model/transaction-item'
   import { Database, QueryBuilder, Storage} from '@myback/sdk'
   import * as bootstrap from 'bootstrap'
 
@@ -73,7 +73,7 @@
     const labled_price: number = 0
     const exchange_rate: number = 0
     const discount: number = 0
-    const actual_price: number = 0
+    const paid_price: number = 0
 
     return {
       page_size,
@@ -135,7 +135,7 @@
       labled_price,
       exchange_rate,
       discount,
-      actual_price,
+      paid_price,
 
       delete_product
     }
@@ -237,19 +237,19 @@
       for(let i = 0; i < products.length; i++){
         
         let stock = products[i].stock
-        let query_list = [QueryBuilder.equal('product', products[i].id), QueryBuilder.greaterThan('stock_change', 0)]
+        let query_list = [QueryBuilder.equal('product', products[i].id), QueryBuilder.greaterThan('quantity', 0)]
         const query = QueryBuilder.and(...query_list)
-        const orders = await db.find(OrderItem, query)
+        const orders = await db.find(TransactionItem, query)
         let idx = orders.length - 1
         while(stock > 0){
-          if(stock > orders[idx].stock_change){
-            sum += orders[idx].stock_change * orders[idx].actual_price
+          if(stock > orders[idx].quantity){
+            sum += orders[idx].quantity * orders[idx].paid_price
           }
           else{
-            sum += stock * orders[idx].actual_price
+            sum += stock * orders[idx].paid_price
           }
             
-          stock -= orders[idx].stock_change
+          stock -= orders[idx].quantity
           idx--
         }
       }
@@ -287,11 +287,11 @@
       this.sold_out_importers = []
       for(let i = 0; i < this.sold_out_products.length; i++){
         let query = QueryBuilder.equal('product', Number(this.sold_out_products[i].id))
-        let orderitem = await db.find(OrderItem, query)
+        let orderitem = await db.find(TransactionItem, query)
         let idx = orderitem.length - 1
         if(orderitem[idx]){
           query = QueryBuilder.equal('id', orderitem[idx].id)
-          let order = await db.find(Order, query)
+          let order = await db.find(Transaction, query)
           this.sold_out_dates[i] = order[0].time.split('T')[0]
           this.sold_out_importers[i] = order[0].importer
         }
@@ -390,7 +390,7 @@
       }
 
       bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide()
-      bootstrap.Modal.getOrCreateInstance(document.getElementById('addOrderModal')).show()
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('addTransactionModal')).show()
     },
 
     async saveProduct() {
@@ -407,31 +407,31 @@
     },
     async backToInfoPage() {
       bootstrap.Modal.getInstance(document.getElementById('addProductModal')).show()
-      bootstrap.Modal.getInstance(document.getElementById('addOrderModal')).hide()
+      bootstrap.Modal.getInstance(document.getElementById('addTransactionModal')).hide()
     },
     async saveOrder(){
       const product = await this.saveProduct()
 
       const db = new Database();
 
-      const order = new Order()
+      const order = new Transaction()
 
       order.time = new Date(this.order_time)
       order.importer = this.importer
-      order.amount = this.actual_price*this.stock
+      order.total_price = this.paid_price*this.stock
       order.internet_marketing = 0
       await db.save(Order, order)
 
-      const orderItem = new OrderItem()
+      const orderItem = new TransactionItem()
       orderItem.id = order.id
       orderItem.product = product
-      orderItem.stock_change = this.stock
+      orderItem.quantity = this.stock
       orderItem.labeled_price = this.labled_price
       orderItem.exchange_rate = this.exchange_rate
       orderItem.discount = this.discount
-      orderItem.actual_price = this.labled_price*this.exchange_rate+this.discount
+      orderItem.paid_price = this.labled_price*this.exchange_rate+this.discount
       orderItem.note = "初始交易資料"
-      await db.save(OrderItem, orderItem)
+      await db.save(TransactionItem, orderItem)
       bootstrap.Modal.getInstance(document.getElementById('addOrderModal')).hide()
       this.clear()
       this.updateList()
@@ -540,7 +540,7 @@
       this.labled_price = 0
       this.exchange_rate = 0
       this.discount = 0
-      this.actual_price = 0
+      this.paid_price = 0
 
       this.tobeDelete = []
     },

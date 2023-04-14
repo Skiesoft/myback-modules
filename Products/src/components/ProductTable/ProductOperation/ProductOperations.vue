@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Order } from '@/model/order';
-  import { OrderItem } from '@/model/orderItem';
+  import { Transaction } from '@/model/transaction';
+  import { TransactionItem } from '@/model/transaction-item';
   import { Product } from '@/model/product';
   import { Database } from '@myback/sdk';
   import { orderBy } from '@myback/sdk/build/api/query-builder';

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Order } from '@/model/order';
-  import { OrderItem } from '@/model/orderItem';
+  import { Transaction } from '@/model/transaction';
+  import { TransactionItem } from '@/model/transaction-item';
 import { Modal } from 'bootstrap';
   import { defineComponent } from 'vue';
 
@@ -36,7 +36,7 @@ import { Modal } from 'bootstrap';
       async validCheck(){
 
       },
-      async create(): Promise<[Order, OrderItem]>{
+      async create(): Promise<[Transaction, TransactionItem]>{
 
       },
       async clear(){

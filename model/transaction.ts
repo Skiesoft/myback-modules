@@ -1,8 +1,8 @@
 import { Model, attribute } from '@myback/sdk'
-import { Member } from './member'
+import { Contact } from './contact'
 
-export class Order extends Model {
-    protected static tableName: string = 'orders'
+export class Transaction extends Model {
+    protected static tableName: string = 'transactions'
 
     @attribute({ type: 'int' , primary: true, autoIndex: true})
         id?: number
@@ -10,14 +10,12 @@ export class Order extends Model {
     @attribute({ type: 'datetime' })
         time?: Date
 
-    @attribute({ type: 'string', nullable: true})
-        importer?: string
 
     @attribute({ type: 'relation', nullable: true})
-        member?: Member
+        contact?: Contact
 
     @attribute({ type: 'int' })
-        amount?: number
+        total_price?: number
 
     @attribute({ type: 'int'})
         internet_marketing: number = 0

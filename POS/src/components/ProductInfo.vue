@@ -2,7 +2,7 @@
 import { defineComponent } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
 import { Product } from '../model/product'
-import { Member } from '../model/member'
+import { Contact } from '../model/contact'
 
 export default defineComponent({
   props:['productIn'],
@@ -187,14 +187,13 @@ export default defineComponent({
       let phonenumbers = ["0987654321", "0912345678", "0974185263"]
       let names = ['王小明', '王小美', '王大明']
       for(let i = 0; i < phonenumbers.length; i++){
-        const member = new Member()
-        member.phone_number = phonenumbers[i]
+        const member = new Contact()
+        member.phone = phonenumbers[i]
         member.name = names[i]
-        member.role = "VIP"
         member.email = "test" + String(i) + "@test.com"
-        member.date = new Date()
+        member.create_date = new Date()
         const db = new Database()
-        await db.save(Member, member)
+        await db.save(Contact, member)
       }
     }
     // test function end

@@ -1,20 +1,27 @@
 import { Model, attribute } from '@myback/sdk'
 import { Product } from './product'
+import { Transaction } from './transaction'
 
-export class OrderItem extends Model {
-    protected static tableName: string = 'orderItems'
+export class TransactionItem extends Model {
+    protected static tableName: string = 'transaction_items'
 
     @attribute({ type: 'int'})
         id?: number
+
+    @attribute({ type: 'relation' })
+        transaction?: Transaction
 
     @attribute({ type: 'relation'})
         product?: Product
 
     @attribute({ type: 'int'})
-        stock_change?: number
+        quantity?: number
 
     @attribute({ type: 'float'})
         labeled_price: number = 0
+
+    @attribute({ type: 'string' })
+        currency?: string
 
     @attribute({ type: 'float'})
         exchange_rate: number = 1
@@ -23,9 +30,8 @@ export class OrderItem extends Model {
         discount: number = 0
 
     @attribute({ type: 'float'})
-        actual_price?: number
+        paid_price?: number
     
     @attribute({ type: 'string'})
-        note: string = ''
-    
+        note: string = ''    
 }

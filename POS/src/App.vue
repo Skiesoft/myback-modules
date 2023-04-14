@@ -1,10 +1,10 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
-import { Order } from './model/order'
+import { Transaction } from './model/transaction'
 import { Product } from './model/product'
-import { Member } from './model/member'
-import { OrderItem } from './model/orderItem'
+import { Contact } from './model/contact'
+import { TransactionItem } from './model/transaction-item'
 import ProductList from './components/ProductList.vue'
 import ProductInfo from './components/ProductInfo.vue'
 import MemberSearch from './components/MemberSearch.vue'
@@ -113,27 +113,27 @@ export default defineComponent ({
     async complete(){
       if(this.actualIncome != ""){
         const time = new Date()
-        const order = new Order()
+        const order = new Transaction()
         let len = this.products.length    
         let id = -1;
         order.time = time
-        order.amount = Number(this.actualIncome)
+        order.total_price = Number(this.actualIncome)
         order.internet_marketing = this.getOnline()
         this.checkMember()
         if(this.getPhoneNumber() != ""){
           let query = QueryBuilder.equal("phone_number", String(this.getPhoneNumber()))
           const db = new Database()
-          let found = await db.find(Member, query)
+          let found = await db.find(Contact, query)
           if(found[0]){
-            order.member = found[0]
+            order.contact = found[0]
           }
         }
         const db = new Database()
-        await db.save(Order, order)
+        await db.save(Transaction, order)
 
         for(let i = 0; i < len!; i++){
           const db= new Database()
-          const orderitem = new OrderItem()
+          const orderitem = new TransactionItem()
           
           let name =  String(this.products[i].name)
           let query = QueryBuilder.equal("name", name)
@@ -141,14 +141,14 @@ export default defineComponent ({
           
           orderitem.id = order.id
           orderitem.product = found[0]
-          orderitem.stock_change = -1 * this.counts[i]
+          orderitem.quantity = -1 * this.counts[i]
           orderitem.labeled_price = this.products[i].price
           orderitem.exchange_rate = 1
           orderitem.discount = (this.getChangePrice(i) > 0 ?  this.getChangePrice(i) : 0)
-          orderitem.actual_price = this.getSubTotal(i)
+          orderitem.paid_price = this.getSubTotal(i)
           orderitem.note = ""
 
-          await db.save(OrderItem, orderitem)
+          await db.save(TransactionItem, orderitem)
         }
         this.resetall()
       }

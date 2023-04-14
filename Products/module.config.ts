@@ -1,10 +1,11 @@
-import { Member } from './src/model/member'
-import { Order } from './src/model/order'
-import { OrderItem } from './src/model/orderItem'
 import { Product } from './src/model/product'
+import { Contact } from './src/model/contact'
+import { Transaction } from './src/model/transaction'
+import { TransactionItem } from './src/model/transaction-item'
+import { Picture } from './src/model/picture'
 
 module.exports = {
   name: 'Product',
   description: 'Manage Product items.',
-  models: [Member, Order, OrderItem, Product]
+  models: [Product, Contact, Transaction, TransactionItem, Picture]
 }

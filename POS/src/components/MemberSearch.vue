@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { Database, QueryBuilder } from '@myback/sdk'
-import { Member } from '../model/member'
+import { Contact } from '../model/contact'
 export default defineComponent ({
   data() {
     return {
@@ -28,7 +28,7 @@ export default defineComponent ({
     async findmember(){
       const db = new Database()
       let query = QueryBuilder.equal("phone_number", this.phonenumber)
-      let found = await db.find(Member, query)
+      let found = await db.find(Contact, query)
       if (found[0]){
         this.membername = found[0].name
         this.isMember = true
