@@ -18,4 +18,6 @@ SDK.init({
   DATABASE: window.DATABASE ?? 'default'
 })
 
+
 createApp(App).mount('#app')
+
