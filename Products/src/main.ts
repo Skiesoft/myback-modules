@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { SDK } from '@myback/sdk'
 import App from './App.vue'
+import { router } from './route'
 
 declare global {
   interface Window {
@@ -19,5 +20,5 @@ SDK.init({
 })
 
 
-createApp(App).mount('#app')
+createApp(App).use(router).mount('#app')
 

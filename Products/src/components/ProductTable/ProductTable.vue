@@ -61,6 +61,9 @@
       </div>
       <div class="col-4  d-flex">
         <SearchBar @update="changeQuery" />
+        <router-link to="/import" custom v-slot="{ navigate }">
+          <button type="button" class="btn btn-primary ms-3 col-3 fw-bold" style="background: #3B587A;" @click="navigate">商品入庫</button>
+        </router-link>
         <button type="button" class="btn btn-primary ms-3 col-3 fw-bold" style="background: #3B587A;" @click="edit(null)">新增商品</button>
       </div>
     </div>
