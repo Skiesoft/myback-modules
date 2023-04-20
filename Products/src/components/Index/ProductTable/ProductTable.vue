@@ -2,7 +2,7 @@
   import { defineComponent } from 'vue'
   import ProductList from './ProductList.vue'
   import SearchBar from './SearchBar.vue'
-  import PageBar from '../PageBar.vue'
+  import PageBar from '@/components/Common/PageBar.vue'
   import ProductOperations from './ProductOperation/ProductOperations.vue'
   import { Query } from '@myback/sdk/build/api/query-builder'
   import { QueryBuilder } from '@myback/sdk'
@@ -20,6 +20,10 @@
       }
     },
     methods: {
+      async pageBarReload(){
+        this.$emit('totalProductUpadte')
+        this.$refs.PageBar.reload()
+      },
       async changePage(page:number){
         this.page = page
         await new Promise(f => setTimeout(f, 1))
@@ -36,8 +40,8 @@
         await this.$refs.PageBar.reload()
         this.$refs.ProductList.fetchProducts()
       },
-      async edit(target_product:Product|null){
-        await this.$refs.ProductOperations.openInfoModal(target_product)
+      async newProduct(){
+        this.$refs.ProductList.edit(null)
       },
       async refresh(){
         this.$refs.ProductList.fetchProducts()
@@ -64,10 +68,12 @@
         <router-link to="/import" custom v-slot="{ navigate }">
           <button type="button" class="btn btn-primary ms-3 col-3 fw-bold" style="background: #3B587A;" @click="navigate">商品入庫</button>
         </router-link>
-        <button type="button" class="btn btn-primary ms-3 col-3 fw-bold" style="background: #3B587A;" @click="edit(null)">新增商品</button>
+        <router-link to="/view/0" custom v-slot="{ navigate }">
+          <button type="button" class="btn btn-primary ms-3 col-3 fw-bold" style="background: #3B587A;" @click="navigate">新增商品</button>
+        </router-link>
       </div>
     </div>
-    <ProductList ref="ProductList" :query="query" :page="page" :page_size="page_size" @open="edit"/>
+    <ProductList ref="ProductList" :query="query" :page="page" :page_size="page_size" @reload="pageBarReload()"/>
   </div>
 
   <ProductOperations ref="ProductOperations" @refresh="refresh()"/>

@@ -1,8 +1,8 @@
 <script lang="ts">
-import { Product } from '@/model/product';
-import { Database, QueryBuilder } from '@myback/sdk';
-import { defineComponent } from 'vue';
-import Confirm from '../Confirm.vue'
+  import { Product } from '@/model/product';
+  import { Database, QueryBuilder } from '@myback/sdk';
+  import { defineComponent } from 'vue';
+  import ProductOperations from './ProductOperation/ProductOperations.vue'
 
   export default defineComponent({
     emits:["open"],
@@ -11,7 +11,7 @@ import Confirm from '../Confirm.vue'
       const products:Array<Product> = []
 
       const sort_target:string = "id"
-      const sort_order:string = "asc"
+      const sort_order:"asc"|"desc" = "asc"
 
       const delete_product:Product|null = null
 
@@ -20,8 +20,6 @@ import Confirm from '../Confirm.vue'
 
         sort_target,
         sort_order,
-
-        delete_product
       }
     },
     methods:{
@@ -34,7 +32,6 @@ import Confirm from '../Confirm.vue'
           this.sort_target = target
           this.sort_order = 'asc'
           document.getElementById(target)?.classList.add('sortUp')
-          //this.updateList()
           this.fetchProducts()
           return
         }
@@ -47,28 +44,20 @@ import Confirm from '../Confirm.vue'
           this.sort_order = 'asc'
           document.getElementById(target)?.classList.add('sortUp')
         }
-        //this.updateList()
         this.fetchProducts()
       },
       async fetchProducts(){
         const db = new Database()
         this.products = await db.find(Product, QueryBuilder.orderBy(this.query,this.sort_target,this.sort_order), this.page-1, this.page_size)
       },
-      async edit(product:Product){
-        this.$emit('open', product)
+      async edit(product:Product|null){
+        this.$refs.ProductOperations.show(product)
       },
-      async deleteProduct(){
-        const db = new Database()
-        db.destroy(Product, this.delete_product)
-        this.delete_product = null
-        this.fetchProducts()
-      },
-      async deleteConfirm(product:Product){
-        this.delete_product = product
-        this.$refs.Confirm.show()
+      async deleteProduct(product:Product){
+        this.$refs.ProductOperations.deleteConfirm(product)
       }
     },
-    components: {Confirm}
+    components: {ProductOperations}
   })
 
 </script>
@@ -83,33 +72,33 @@ import Confirm from '../Confirm.vue'
       </div>
     </div>
     <div class="col-2 fw-bold d-flex align-items-center me-2">
-      Name
+      名稱
       <div id="name" class="d-flex flex-column ms-1" @click="sort('name')" type="button">
         <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
         <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px"></i></div>
       </div>
     </div>
     <div class="col fw-bold d-flex align-items-center">
-      category
+      分類
       <div id="category" class="d-flex flex-column ms-1">
       </div>
     </div>
     <div class="col fw-bold d-flex align-items-center">
-      Status
+      狀態
       <div id="status" class="d-flex flex-column ms-1" @click="sort('status') " type="button">
         <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
         <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px"></i></div>
       </div>
     </div>
     <div class="col fw-bold d-flex align-items-center">
-      In-stock
+      庫存
       <div id="stock" class="d-flex flex-column ms-1" @click="sort('stock')" type="button">
         <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
         <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px"></i></div>
       </div>
     </div>
     <div class="col fw-bold d-flex align-items-center">
-      Add-time
+      新增時間
       <div id="create_time" class="d-flex flex-column ms-1" @click="sort('create_time')" type="button">
         <div class="arrow-up"><i class="bi bi-caret-up-fill" style="font-size: 1px"></i></div>
         <div class="arrow-down"><i class="bi bi-caret-down-fill" style="font-size: 1px"></i></div>
@@ -138,12 +127,12 @@ import Confirm from '../Confirm.vue'
       <div class="col">{{ product.manufacturer }}</div>
       <div class="d-flex col">
         <button class="link" style="color: #3B587A" @click="edit(product)">Edit</button>
-        <button class="link link-danger ms-1" @click="deleteConfirm(product)">Delete</button>
+        <button class="link link-danger ms-1" @click="deleteProduct(product)">Delete</button>
       </div>
     </div>
   </div>
 
-  <Confirm ref="Confirm" :confirm_message="'您確定要刪除此商品嗎?'" :confirm_option="'刪除'" :confirm_operation="deleteProduct" />
+  <ProductOperations ref="ProductOperations" @fetch="fetchProducts()"/>
 
 </template>
 

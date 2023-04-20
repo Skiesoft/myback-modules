@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { Database } from '@myback/sdk'
-import { Product } from '../model/product'
+import { Product } from '@/model/product'
 
 export default defineComponent({
   data() {
@@ -21,10 +21,10 @@ export default defineComponent({
 
 
 <template>
-    <div class="col-2 box border rounded mb-2 mt-2 me-2 d-flex justify-content-center" style="height:100px">
-      <i class="bi-box m-3" style="font-size: 40px"></i>
+    <div class="col-6 box border rounded m-2 d-flex justify-content-center" style="height:100px">
+      <i class="bi-box m-3" style="font-size: 50px"></i>
       <div class="ms-1 mt-4 me-1">
-        <h6>商品數量</h6> 
+        <h5>商品數量</h5> 
         <h5>{{ total_products }}</h5>
       </div>
     </div>

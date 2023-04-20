@@ -1,8 +1,7 @@
 <script lang="ts">
   import { defineComponent } from 'vue'
   import { Database, QueryBuilder } from '@myback/sdk'
-  import { Query } from '@myback/sdk/build/api/query-builder'
-  import { Product } from '../model/product'
+  import { Product } from '@/model/product'
 
   export default defineComponent({
     props: ["page_size", "table_name", "query"],
