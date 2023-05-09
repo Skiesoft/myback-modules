@@ -2,6 +2,7 @@
   import { defineComponent } from 'vue'
 
   import InfoTable from './InfoTable.vue'
+  import DataChartTable from './DatachartsTable/DataChartTable.vue'
   //import StatisticTable from './StatisticTable/StatisticTable.vue'
 
   export default defineComponent ({
@@ -15,13 +16,13 @@
     methods: {
       
     },
-    components: {InfoTable}
+    components: {InfoTable, DataChartTable}
   })
 </script>
 
 <template>
   <div class="d-flex">
-    <div class="col-6"></div>
-    <InfoTable></InfoTable>
+    <DataChartTable/>
+    <InfoTable/>
   </div>
 </template>

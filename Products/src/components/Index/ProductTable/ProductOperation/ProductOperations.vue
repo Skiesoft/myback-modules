@@ -5,9 +5,8 @@
   import { Database, QueryBuilder } from '@myback/sdk';
   import { defineComponent } from 'vue'; 
   import InfoModal from './InfoModal.vue'
-  import OrderModal from './OrderModal.vue'
   import Confirm from '@/components/Common/Confirm.vue'
-import { orderBy } from '@myback/sdk/build/api/query-builder';
+  import { orderBy } from '@myback/sdk/build/api/query-builder';
 
   export default defineComponent({
     data(){
@@ -82,7 +81,7 @@ import { orderBy } from '@myback/sdk/build/api/query-builder';
         this.$emit('fetch')
       }
     },
-    components: {InfoModal, OrderModal, Confirm}
+    components: {InfoModal, Confirm}
   })
 </script>
 
