@@ -5,34 +5,30 @@
   
   ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale)
 
-  export default defineComponent({
-    data() {
-        return{
-          chartData: {
+
+  export default defineComponent ({
+    data(){
+      return {
+        chartData: {
           labels: [ '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-          datasets: [ { label:'本月銷售總額', data: [40, 20, 12, 15, 16, 17, 18, 19, 20, 25, 26, 27] } ]
+          datasets: [ { label:'今年銷售總額', data: [40, 20, 12, 15, 16, 17, 18, 19, 20, 25, 26, 27] } ]
         },
         chartOptions: {
           responsive: true
         }
-        }
-    },
-    methods: {
-      async update(){
-        
       }
     },
-    components:{Line}
+    mounted(){
+    },
+    methods: {
+      
+    },
+    components: {Line}
   })
 </script>
 
 <template>
-  <div class="box col-7 m-2" style="height:260px">
-    <h4 class="fw-bold m-4">
-      本月銷售統計
-    </h4>
-    <div style="height:180px">
-      <Line :data="chartData" :options="chartOptions" />
-    </div>
+  <div class="d-flex box col-11 border rounded m-2 align-items-center" style="height:488px">
+    <Line :data="chartData" :options="chartOptions" />
   </div>
 </template>

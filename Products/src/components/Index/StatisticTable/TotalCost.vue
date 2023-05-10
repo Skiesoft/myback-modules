@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
-import { Product } from '../../model/product'
+import { Product } from '@/model/product'
 import { TransactionItem } from '@/model/transaction-item';
 
 export default defineComponent({
