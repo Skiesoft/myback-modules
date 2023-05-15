@@ -25,7 +25,6 @@ export default defineComponent ({
 
 <template>
     <div class="col-6">
-      <div style="height: 44px"></div>
       <div class="d-flex">
         <TotalOrder/>
         <TotalSale/>

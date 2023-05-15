@@ -15,8 +15,8 @@
     },
     methods: {
       async update(){
-        this.$refs.totalProduct.update()
-        this.$refs.totalCost.update()
+        (this.$refs['totalProduct'] as any).update()
+        (this.$refs['totalCost'] as any).update()
       },
     },
     components: {StatisticTable, SalesChart, ProductTable}

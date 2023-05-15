@@ -9,11 +9,12 @@
     data() {
         return{
           chartData: {
-          labels: [ '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-          datasets: [ { label:'本月銷售總額', data: [40, 20, 12, 15, 16, 17, 18, 19, 20, 25, 26, 27] } ]
+          labels: Array.from({length: 31}, (_, i) => i + 1),
+          datasets: [ { label:'本月銷售總額', data: [40, 20, 12, 15, 16, 17, 18, 19, 20, 25, 26, 27],borderColor:'rgba(54, 162, 235, 0.2)', backgroundColor:'rgba(54, 162, 235, 0.2)' } ]
         },
         chartOptions: {
-          responsive: true
+          responsive: true,
+          aspectRatio: 5
         }
         }
     },
@@ -27,12 +28,12 @@
 </script>
 
 <template>
-  <div class="box col-7 m-2" style="height:260px">
+  <div class="box col-7 m-2">
     <h4 class="fw-bold m-4">
       本月銷售統計
     </h4>
     <div style="height:180px">
-      <Line :data="chartData" :options="chartOptions" />
+      <Line :data="chartData" :options="chartOptions"/>
     </div>
   </div>
 </template>

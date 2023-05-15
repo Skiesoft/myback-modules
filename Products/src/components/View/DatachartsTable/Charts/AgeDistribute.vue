@@ -10,11 +10,12 @@
     data(){
       return {
         chartData: {
-          labels: [ '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-          datasets: [ { data: [40, 20, 12, 15, 16, 17, 18, 19, 20, 25, 26, 27] } ]
+          labels: [ '1-10', '11-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71-80', '81-90', '91-100'],
+          datasets: [ { label:'年齡分布',data: [40, 20, 12, 15, 16, 17, 18, 19, 20, 25] , backgroundColor:'rgba(54, 162, 235, 0.2)', borderColor:'rgb(54, 162, 235)'} ]
         },
         chartOptions: {
-          responsive: true
+          responsive: true,
+          indexAxis: 'y'
         }
       }
     },
@@ -28,7 +29,7 @@
 </script>
 
 <template>
-  <div class="d-flex box col-11 border rounded m-2 align-items-center" style="height:365px">
+  <div class="d-flex box col-11 border rounded m-2 align-items-center p-4" >
     <Bar :data="chartData" :options="chartOptions" />
   </div>
 </template>

@@ -5,10 +5,12 @@
   export default defineComponent({
     props:["confirm_message", "confirm_option", "table_name"],
     data(){
-      const modal: Modal|null = null;
-      return{
-        modal
+      type ComponentData = {
+        modal: Modal|null;
       }
+      return{
+        modal:null
+      } as ComponentData
     },
     mounted(){
       console.log(`${this.table_name}Confirm`)
@@ -16,10 +18,10 @@
     },
     methods: {
       async show(){
-        this.modal.show()
+        this.modal?.show()
       },
       async hide(){
-        this.modal.hide()
+        this.modal?.hide()
       }
     }
   })

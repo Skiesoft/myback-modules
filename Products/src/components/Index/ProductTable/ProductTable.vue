@@ -3,31 +3,32 @@
   import ProductList from './ProductList.vue'
   import SearchBar from './SearchBar.vue'
   import PageBar from '@/components/Common/PageBar.vue'
-  import ProductOperations from './ProductOperation/ProductOperations.vue'
   import { Query } from '@myback/sdk/build/api/query-builder'
   import { QueryBuilder } from '@myback/sdk'
   import { Product } from '@/model/product'
 
   export default defineComponent({
     data(){
-      const query:Query|null = null
-      const page:number = 1
-      const page_size = 9
-      return{
-        query,
-        page,
-        page_size
+      type ComponentData = {
+        query:Query|null,
+        page:number,
+        page_size:number,
       }
+      return{
+        query:null,
+        page:1,
+        page_size:3,
+      } as ComponentData
     },
     methods: {
       async pageBarReload(){
-        this.$emit('totalProductUpadte')
-        this.$refs.PageBar.reload()
+        this.$emit('totalProductUpadte');
+        (this.$refs['PageBar'] as any).reload()
       },
       async changePage(page:number){
         this.page = page
-        await new Promise(f => setTimeout(f, 1))
-        this.$refs.ProductList.fetchProducts()
+        await new Promise(f => setTimeout(f, 1));
+        (this.$refs['ProductList'] as any).fetchProducts()
       },
       async changeQuery(query:Query|null){
         if(query == null){
@@ -37,20 +38,20 @@
           this.query = query
         }
         await new Promise(f => setTimeout(f, 1))
-        await this.$refs.PageBar.reload()
-        this.$refs.ProductList.fetchProducts()
+        await (this.$refs['PageBar'] as any).reload()
+        (this.$refs['ProductList'] as any).fetchProducts()
       },
       async newProduct(){
-        this.$refs.ProductList.edit(null)
+        (this.$refs['ProductList'] as any).edit(null)
       },
       async refresh(){
-        this.$refs.ProductList.fetchProducts()
+        (this.$refs['ProductList'] as any).fetchProducts()
       }
     },
     mounted(){
       this.changeQuery(null)
     },
-    components: {ProductList, SearchBar, PageBar, ProductOperations}
+    components: {ProductList, SearchBar, PageBar}
   })
 </script>
 
@@ -75,7 +76,5 @@
     </div>
     <ProductList ref="ProductList" :query="query" :page="page" :page_size="page_size" @reload="pageBarReload()"/>
   </div>
-
-  <ProductOperations ref="ProductOperations" @refresh="refresh()"/>
 
 </template>

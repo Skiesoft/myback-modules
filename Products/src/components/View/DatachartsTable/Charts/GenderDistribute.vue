@@ -12,10 +12,11 @@
       return {
         chartData: {
           labels: [ '男性','女性'],
-          datasets: [ { backgroundColor:['#0000FF','#FF0000'],data: [55,45] } ]
+          datasets: [ { backgroundColor:['rgba(54, 162, 235, 0.2)', 'rgba(255, 99, 132, 0.2)'],data: [55,45] } ]
         },
         chartOptions: {
-          responsive: true
+          responsive: true,
+          rotation:0
         }
       }
     },
@@ -30,7 +31,7 @@
 
 <template>
   <div class="d-flex justify-content-center">
-    <div class="box border rounded col-6 m-2 align-items-center" style="height: 360px">
+    <div class="box border rounded col-6 m-2 align-items-center">
       <Pie :data="chartData" :options="chartOptions"/>
     </div>
   </div>

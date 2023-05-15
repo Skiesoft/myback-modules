@@ -2,34 +2,35 @@
   import { Product } from '@/model/product';
   import { Database, QueryBuilder } from '@myback/sdk';
   import { defineComponent } from 'vue';
-  import ProductOperations from './ProductOperation/ProductOperations.vue'
 
   export default defineComponent({
     emits:["open"],
     props:["query", "page", "page_size"],
     data(){
-      const products:Array<Product> = []
 
-      const sort_target:string = "id"
-      const sort_order:"asc"|"desc" = "asc"
+      type ComponentData = {
+        products:Array<Product>
+        sort_element:string
+        sort_order:'asc'|'desc'
+      }      
 
       const delete_product:Product|null = null
 
       return{
-        products,
+        products:{},
 
-        sort_target,
-        sort_order,
-      }
+        sort_element:'id',
+        sort_order:'asc',
+      } as ComponentData
     },
     methods:{
       async sort(target: string){
-        let prev_element = document.getElementById(this.sort_target)
+        let prev_element = document.getElementById(this.sort_element)
         prev_element?.classList.remove('sortUp')
         prev_element?.classList.remove('sortDown')
 
-        if (this.sort_target != target){
-          this.sort_target = target
+        if (this.sort_element != target){
+          this.sort_element = target
           this.sort_order = 'asc'
           document.getElementById(target)?.classList.add('sortUp')
           this.fetchProducts()
@@ -48,16 +49,14 @@
       },
       async fetchProducts(){
         const db = new Database()
-        this.products = await db.find(Product, QueryBuilder.orderBy(this.query,this.sort_target,this.sort_order), this.page-1, this.page_size)
+        this.products = await db.find(Product, QueryBuilder.orderBy(this.query,this.sort_element,this.sort_order), this.page-1, this.page_size)
       },
       async edit(product:Product|null){
-        this.$refs.ProductOperations.show(product)
       },
       async deleteProduct(product:Product){
-        this.$refs.ProductOperations.deleteConfirm(product)
       }
     },
-    components: {ProductOperations}
+    components: {}
   })
 
 </script>
@@ -123,11 +122,11 @@
       <div class="col overflowhidden">{{ product.category }}</div>
       <div class="col">{{ product.status }}</div>
       <div class="col">{{ product.stock }}</div>
-      <div class="col">{{ product.create_time.split('T')[0] }}</div>
+      <div class="col">{{ product.create_time?.toString().split('T')[0] }}</div>
       <div class="col">{{ product.manufacturer }}</div>
       <div class="d-flex col">
-        <button class="link" style="color: #3B587A" @click="edit(product)">Edit</button>
-        <button class="link link-danger ms-1" @click="deleteProduct(product)">Delete</button>
+        <button class="link" style="color: #3B587A" @click="edit(<Product>product)">Edit</button>
+        <button class="link link-danger ms-1" @click="deleteProduct(<Product>product)">Delete</button>
       </div>
     </div>
   </div>

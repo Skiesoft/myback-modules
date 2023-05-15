@@ -12,17 +12,27 @@
       }
     },
     mounted(){
+      this.init()
     },
     methods: {
-      
+      async init(){
+        if(this.$route.params.id == '0'){
+          document.getElementById('DataChartTable')?.style.setProperty('display','none')
+        }
+      }
     },
     components: {InfoTable, DataChartTable}
   })
 </script>
 
 <template>
-  <div class="d-flex">
-    <DataChartTable/>
+  <router-link to="/" custom v-slot="{ navigate }">
+    <div class="m-3" type="button" @click="navigate">
+      <i class="bi bi-arrow-left" style="font-size: 25px"></i>
+    </div>
+  </router-link>
+  <div class="d-flex justify-content-center">
+    <DataChartTable id="DataChartTable"/>
     <InfoTable/>
   </div>
 </template>
