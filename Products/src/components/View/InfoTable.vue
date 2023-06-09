@@ -3,30 +3,63 @@
   import { Picture } from '@/model/picture'
   import { Product } from '@/model/product'
   import { Database, QueryBuilder, Storage } from '@myback/sdk'
+  import axios from 'axios'
 
   
 
   export default defineComponent ({
     data(){
       const current_product:Product = new Product()
+
       const category: String = ''
       const categorys: Array<String> = []
+
+      const pictures_files: Array<File> = []  
       const pictures: Array<Picture> = []
-      const new_product: Boolean = true
 
       return {
         current_product,
         categorys,
         category,
         pictures,
-        new_product
+        pictures_files,
       }
     },
     mounted(){
+      this.load()
     },
     methods: {
       async load(){
-        
+        const storage = new Storage()
+        //clear storage's display folder
+
+        if(this.$route.params.id == '0'){
+          this.unlock()
+          return
+        }
+
+        let query = QueryBuilder.equal('id', <string>this.$route.params.id)
+        const db = new Database()
+        this.current_product = (await db.find(Product, query))[0]
+        this.categorys = this.current_product.category.split('/')
+
+        query = QueryBuilder.equal('product_id', this.current_product.id!)
+        let original_pictures = await db.find(Picture, query)
+        for(let i = 0 ; i < original_pictures.length ; i++){
+          let picture_file:File = await axios.get(original_pictures[i].url)
+          this.pictures_files.push(picture_file)
+          console.log(picture_file)
+
+          let picture_info = await storage.uploadWithAutoname(picture_file, 'display')
+          let picture:Picture = new Picture()
+          picture.product_id = <Product>this.current_product
+          picture.file_name = picture_info.path
+          picture.url = picture_info.url
+          this.pictures.push(picture)
+        }
+
+        this.lock()
+
       },
       async unlock(){
         document.getElementById('stock_input')?.removeAttribute('disabled')
@@ -35,17 +68,25 @@
         document.getElementById('stock_input')?.setAttribute('disabled','')
       },
       async valid(){
-        console.log(this.current_product)
         let check:boolean = false;
 
         let message:string = ""
         const db = new Database()
-
-        if(this.current_product.upc != '' && this.new_product){
+        
+        if(this.current_product.upc != '' && this.current_product.upc != undefined){
           let query = QueryBuilder.equal('upc', this.current_product!.upc!)
-          if((<number>await db.count(Product, query)) > 0){
-            check = true
-            message += "條碼重複\n"
+          let same_upc_products = await db.find(Product, query)
+          if(same_upc_products.length > 0){
+            if(this.$route.params.id == '0'){
+              check = true
+              message += "條碼重複\n"
+            }
+            else{
+              if(same_upc_products[0].id != this.current_product.id){
+                check = true
+                message += "條碼重複\n"
+              }
+            }
           }
         }
         if(this.current_product.name == ''){
@@ -77,26 +118,41 @@
       },
       async save(){
         this.current_product.category = this.categorys.join('/')
-        if(this.new_product){
+        if(this.$route.params.id == '0'){
           this.current_product.create_time = new Date()
         }
         const db = new Database()
-        db.save(Product, <Product>this.current_product)
-        
-        if(this.current_product.id == undefined){
-          return
-        }
+        const storage = new Storage()
+        await db.save(Product, <Product>this.current_product)
 
-        const query = QueryBuilder.equal('product_id', this.current_product.id)
-        let original_pictures = await db.find(Picture, query)
+        const query = QueryBuilder.equal('product_id', this.current_product.id!)
+        let original_pictures:Array<Picture> = await db.find(Picture, query)
+        let original_pictures_files:Array<File> = []
+
         for(let i = 0 ; i < original_pictures.length ; i++){
-          await db.destroy(Picture, original_pictures[i])
+          original_pictures_files.push(await axios.get(original_pictures[i].url!))
         }
 
-        for(let i = 0 ; i < this.pictures.length ; i++){
-          this.pictures[i].product_id = this.current_product;
-          db.save(Picture, <Picture>this.pictures[i])
+        for(let i = 0 ; i < original_pictures_files.length ; i++){
+          let index = this.pictures_files.indexOf(original_pictures_files[i])
+          if(index == -1){
+            await storage.destroy(original_pictures[i].file_name!)
+            await db.destroy(Picture,original_pictures[i])
+          }
         }
+
+        for(let i = 0 ; i < this.pictures_files.length ; i++){
+          let index = original_pictures_files.indexOf(this.pictures_files[i])
+          if(index == -1){
+            let picture_info = await storage.uploadWithAutoname(this.pictures_files[i])
+            let picture:Picture = new Picture()
+            picture.file_name = picture_info.path
+            picture.url = picture_info.url
+            picture.product_id = <Product>this.current_product;
+            db.save(Picture, picture)
+          }
+        }
+        this.$router.push({path: '/'})
       },
       async addTag(){
         if(this.category == '')
@@ -120,20 +176,27 @@
           return
         }
         for(let i = 0; i < input_pictures.length ; i++){
+          this.pictures_files.push(input_pictures[i])
+
           let picture_info = await storage.uploadWithAutoname(input_pictures[i], 'display')
           let picture:Picture = new Picture()
-          picture.file_name = picture_info.filename
+          picture.file_name = picture_info.path
           picture.url = picture_info.url
           this.pictures.push(picture)
         }
 
       },
       async pictureRemove(picture: Picture){
-        const index = this.pictures.indexOf(picture)
+        let file:File = await axios.get(picture.url!)
+        let index = this.pictures_files.indexOf(file)
+        this.pictures_files.splice(index, 1)
+
+        index = this.pictures.indexOf(picture)
         this.pictures.splice(index, 1)
+
         const storage = new Storage()
         if(picture.file_name != undefined){
-          await storage.destroy(picture.file_name)
+          storage.destroy(picture.file_name)
         }
       }
     },
@@ -179,7 +242,7 @@
             <h6 class="col-3 m-0 pt-1 pb-1">狀態</h6>
             <div class="col-6">
             <select class="form-select" v-model="current_product.status">
-              <option selected>待進貨</option>
+              <option>待進貨</option>
               <option>銷售中</option>
               <option>缺貨中</option>
               <option>絕版（或不再進貨）</option>

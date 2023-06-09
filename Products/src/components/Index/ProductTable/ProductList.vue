@@ -51,7 +51,8 @@
         const db = new Database()
         this.products = await db.find(Product, QueryBuilder.orderBy(this.query,this.sort_element,this.sort_order), this.page-1, this.page_size)
       },
-      async edit(product:Product|null){
+      async edit(product:Product){
+        this.$router.push({path: '/view/'+ product.id})
       },
       async deleteProduct(product:Product){
       }
@@ -122,7 +123,7 @@
       <div class="col overflowhidden">{{ product.category }}</div>
       <div class="col">{{ product.status }}</div>
       <div class="col">{{ product.stock }}</div>
-      <div class="col">{{ product.create_time?.toString().split('T')[0] }}</div>
+      <div class="col">{{ product.create_time?.toISOString().split('T')[0] }}</div>
       <div class="col">{{ product.manufacturer }}</div>
       <div class="d-flex col">
         <button class="link" style="color: #3B587A" @click="edit(<Product>product)">Edit</button>
