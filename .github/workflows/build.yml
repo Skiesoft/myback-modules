@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        modules: [Products, POS]
+        modules: [Products, POS, Member]
     runs-on: ubuntu-latest    
     defaults:
       run:

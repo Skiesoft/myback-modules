@@ -4,7 +4,7 @@
   "description": "Meta package for repository.",
   "main": "index.js",
   "scripts": {
-    "fix-style": "npx eslint . --fix --ext .ts,.vue"
+    "lint": "npx eslint . --fix --ext .ts,.vue"
   },
   "repository": {
     "type": "git",
