@@ -1,6 +1,5 @@
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import { Query } from '@myback/sdk/build/api/query-builder'
   import { Database, QueryBuilder } from '@myback/sdk'
   import { Product } from '@/model/product'
 
@@ -107,6 +106,7 @@
         }
       },
       async addProduct() {
+        document.getElementById('add')?.setAttribute('disabled','')
         for(let i = 0; i < this.products.length; i++){
           const db= new Database()
           
@@ -118,6 +118,7 @@
 
           await db.save(Product, product[0])
         }
+        this.$router.push({path: '/'})
       }
 
     },
@@ -209,7 +210,7 @@
       </form>
     </div>
     <div class="d-flex justify-content-end mt-auto">
-      <button class="btn btn-primary" @click="addProduct()">新增入庫</button>
+      <button id='add' class="btn btn-primary" @click="addProduct()">新增入庫</button>
     </div>
   </div>
 </template>
