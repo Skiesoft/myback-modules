@@ -1,64 +1,60 @@
 <script lang="ts">
-  import { Product } from '@/model/product';
-  import { Database, QueryBuilder } from '@myback/sdk';
-  import { defineComponent } from 'vue';
+import { Product } from '@/model/product'
+import { Database, QueryBuilder } from '@myback/sdk'
+import { defineComponent } from 'vue'
 
-  export default defineComponent({
-    emits:["open"],
-    props:["query", "page", "page_size"],
-    data(){
-
+export default defineComponent({
+  emits: ['open'],
+  props: ['query', 'page', 'page_size'],
+  data () {
       type ComponentData = {
         products:Array<Product>
         sort_element:string
         sort_order:'asc'|'desc'
-      }      
-
-      const delete_product:Product|null = null
-
-      return{
-        products:{},
-
-        sort_element:'id',
-        sort_order:'asc',
-      } as ComponentData
-    },
-    methods:{
-      async sort(target: string){
-        let prev_element = document.getElementById(this.sort_element)
-        prev_element?.classList.remove('sortUp')
-        prev_element?.classList.remove('sortDown')
-
-        if (this.sort_element != target){
-          this.sort_element = target
-          this.sort_order = 'asc'
-          document.getElementById(target)?.classList.add('sortUp')
-          this.fetchProducts()
-          return
-        }
-
-        if(this.sort_order == 'asc'){
-          this.sort_order = 'desc'
-          document.getElementById(target)?.classList.add('sortDown')
-        }
-        else{
-          this.sort_order = 'asc'
-          document.getElementById(target)?.classList.add('sortUp')
-        }
-        this.fetchProducts()
-      },
-      async fetchProducts(){
-        const db = new Database()
-        this.products = await db.find(Product, QueryBuilder.orderBy(this.query,this.sort_element,this.sort_order), this.page-1, this.page_size)
-      },
-      async edit(product:Product){
-        this.$router.push({path: '/view/'+ product.id})
-      },
-      async deleteProduct(product:Product){
       }
+
+      return {
+        products: {},
+
+        sort_element: 'id',
+        sort_order: 'asc'
+      } as ComponentData
+  },
+  methods: {
+    async sort (target: string) {
+      const prev_element = document.getElementById(this.sort_element)
+      prev_element?.classList.remove('sortUp')
+      prev_element?.classList.remove('sortDown')
+
+      if (this.sort_element !== target) {
+        this.sort_element = target
+        this.sort_order = 'asc'
+        document.getElementById(target)?.classList.add('sortUp')
+        this.fetchProducts()
+        return
+      }
+
+      if (this.sort_order === 'asc') {
+        this.sort_order = 'desc'
+        document.getElementById(target)?.classList.add('sortDown')
+      } else {
+        this.sort_order = 'asc'
+        document.getElementById(target)?.classList.add('sortUp')
+      }
+      this.fetchProducts()
     },
-    components: {}
-  })
+    async fetchProducts () {
+      const db = new Database()
+      this.products = await db.find(Product, QueryBuilder.orderBy(this.query, this.sort_element, this.sort_order), this.page - 1, this.page_size)
+    },
+    async edit (product:Product) {
+      this.$router.push({ path: '/view/' + product.id })
+    },
+    async deleteProduct (product:Product) {
+    }
+  },
+  components: {}
+})
 
 </script>
 
@@ -140,7 +136,7 @@
   .sortUp .arrow-up{
     visibility:visible
   }
-  
+
   .sortUp .arrow-down{
     visibility:hidden
   }
@@ -148,7 +144,7 @@
   .sortDown .arrow-up{
     visibility:hidden
   }
-  
+
   .sortDown .arrow-down{
     visibility:visible
   }
@@ -165,5 +161,5 @@
   .arrow-down{
     margin-top:-7px;
   }
-  
+
 </style>

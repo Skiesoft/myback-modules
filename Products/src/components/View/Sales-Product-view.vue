@@ -1,28 +1,28 @@
 <script lang="ts">
-  import { defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 
-  import InfoTable from './InfoTable.vue'
-  import DataChartTable from './DatachartsTable/DataChartTable.vue'
-  //import StatisticTable from './StatisticTable/StatisticTable.vue'
+import InfoTable from './InfoTable.vue'
+import DataChartTable from './DatachartsTable/DataChartTable.vue'
+// import StatisticTable from './StatisticTable/StatisticTable.vue'
 
-  export default defineComponent ({
-    data(){
-      return {
-        
+export default defineComponent({
+  data () {
+    return {
+
+    }
+  },
+  mounted () {
+    this.init()
+  },
+  methods: {
+    async init () {
+      if (this.$route.params.id === '0') {
+        document.getElementById('DataChartTable')?.style.setProperty('display', 'none')
       }
-    },
-    mounted(){
-      this.init()
-    },
-    methods: {
-      async init(){
-        if(this.$route.params.id == '0'){
-          document.getElementById('DataChartTable')?.style.setProperty('display','none')
-        }
-      }
-    },
-    components: {InfoTable, DataChartTable}
-  })
+    }
+  },
+  components: { InfoTable, DataChartTable }
+})
 </script>
 
 <template>

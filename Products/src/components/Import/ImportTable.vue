@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { defineComponent } from 'vue'
-  import { Database, QueryBuilder } from '@myback/sdk'
-  import { Product } from '@/model/product'
+import { defineComponent } from 'vue'
+import { Database, QueryBuilder } from '@myback/sdk'
+import { Product } from '@/model/product'
 
-  export default defineComponent({
-    data(){
+export default defineComponent({
+  data () {
       type ComponentData = {
         products:Array<Product>
         counts:Array<number>
@@ -14,126 +14,123 @@
         isOpen:boolean
         arrowCounter:number
       }
-      return{
+      return {
         products: [],
         counts: [],
-        search: "",
+        search: '',
         required: false,
         results: [],
         isOpen: false,
         arrowCounter: -1
       } as ComponentData
+  },
+  methods: {
+    async onlyNumber (evt: KeyboardEvent): Promise<void> {
+      const keysAllowed: RegExp = /[0-9]/g
+      const keyPressed: string = evt.key
+
+      if (!keysAllowed.exec(keyPressed)) {
+        evt.preventDefault()
+      }
     },
-    methods: {
-      async onlyNumber(evt: KeyboardEvent): Promise<void> {
-        const keysAllowed: RegExp = /[0-9]/g
-        const keyPressed: string = evt.key;
-      
-        if (!keysAllowed.exec(keyPressed)) {
-          evt.preventDefault()
+    async countAdd (index: number) {
+      this.counts[index] = Number(this.counts[index])
+      this.counts[index] += 1
+    },
+    async countMinus (index: number) {
+      this.counts[index] = Number(this.counts[index])
+      this.counts[index] -= 1
+    },
+    async remove (index: number) {
+      this.products.splice(index, 1)
+      this.counts.splice(index, 1)
+    },
+    async find () {
+      const db = new Database()
+      const indexofupc = this.products.map(function (value) { return value.upc }).indexOf(this.search)
+      if (indexofupc >= 0) {
+        this.products.push(this.products[indexofupc])
+        this.products.splice(indexofupc, 1)
+        this.search = ''
+        this.counts[indexofupc]++
+        this.counts.push(this.counts[indexofupc])
+        this.counts.splice(indexofupc, 1)
+      } else {
+        const queryUpc = QueryBuilder.equal('upc', this.search)
+        const foundinupc = await db.find(Product, queryUpc)
+        if (foundinupc[0]) {
+          this.products.push(foundinupc[0])
+          this.counts.push(1)
+          this.search = ''
+          this.required = false
+        } else {
+          this.search = ''
+          this.required = true
         }
-      },
-      async countAdd(index: number) {
-        this.counts[index] = Number(this.counts[index])
-        this.counts[index] += 1
-      },
-      async countMinus(index: number) {
-        this.counts[index] = Number(this.counts[index])
-        this.counts[index] -= 1
-      },
-      async remove(index: number) {
-        this.products.splice(index, 1)
-        this.counts.splice(index, 1)
-      },
-      async find() {
+      }
+    },
+    async filterResults () {
+      const db = new Database()
+      const query = QueryBuilder.like('upc', '%' + this.search + '%')
+      const found = await db.find(Product, query)
+      this.results = found.map(x => x.upc)
+    },
+    async onEnter () {
+      if (this.isOpen) {
+        if (this.arrowCounter !== -1) {
+          this.search = this.results[this.arrowCounter]
+          this.arrowCounter = -1
+        }
+      }
+      this.isOpen = false
+    },
+    async setResult (result: string) {
+      if (this.results.length !== 0) {
+        this.search = result
+        this.arrowCounter = -1
+      }
+    },
+    async closefilter () {
+      this.isOpen = false
+    },
+    async onArrowDown () {
+      if (this.arrowCounter < this.results.length - 1) {
+        this.arrowCounter = this.arrowCounter + 1
+      }
+    },
+    async onArrowUp () {
+      if (this.arrowCounter > 0) {
+        this.arrowCounter = this.arrowCounter - 1
+      }
+    },
+    async addProduct () {
+      document.getElementById('add')?.setAttribute('disabled', '')
+      for (let i = 0; i < this.products.length; i++) {
         const db = new Database()
-        const indexofupc = this.products.map(function(value){ return value.upc }).indexOf(this.search)
-        if (indexofupc >= 0){
-          this.products.push(this.products[indexofupc])
-          this.products.splice(indexofupc, 1)
-          this.search = ""
-          this.counts[indexofupc]++
-          this.counts.push(this.counts[indexofupc])
-          this.counts.splice(indexofupc, 1)
-        }
-        else{
-          let queryUpc = QueryBuilder.equal("upc", this.search)
-          let foundinupc = await db.find(Product, queryUpc)
-          if (foundinupc[0]){
-            this.products.push(foundinupc[0])
-            this.counts.push(1)
-            this.search = ""
-            this.required = false
-          }
-          else{
-            this.search = ""
-            this.required = true       
-          }
-        }
-      },
-      async filterResults() {
-        let db = new Database()
-        let query = QueryBuilder.like('upc', '%' + this.search + '%')
-        let found = await db.find(Product, query)
-        this.results = found.map(x => x.upc)
-      },
-      async onEnter() {
-        if (this.isOpen) {
-          if(this.arrowCounter != -1){
-            this.search = this.results[this.arrowCounter];
-            this.arrowCounter = -1;
-          }
-        }
-        this.isOpen = false;
-      },
-      async setResult(result: string) {
-        if (this.results.length !== 0) {
-          this.search = result;
-          this.arrowCounter = -1;
-        }
-      },
-      async closefilter(){
-        this.isOpen = false;
-      },
-      async onArrowDown() {
-        if (this.arrowCounter < this.results.length - 1) {
-          this.arrowCounter = this.arrowCounter + 1;
-        }
-      },
-      async onArrowUp() {
-        if (this.arrowCounter > 0) {
-          this.arrowCounter = this.arrowCounter - 1;
-        }
-      },
-      async addProduct() {
-        document.getElementById('add')?.setAttribute('disabled','')
-        for(let i = 0; i < this.products.length; i++){
-          const db= new Database()
-          
-          let name =  String(this.products[i].name)
-          let query = QueryBuilder.equal("name", name)
-          let product = await db.find(Product, query)
 
-          product[0].stock += this.counts[i]
+        const name = String(this.products[i].name)
+        const query = QueryBuilder.equal('name', name)
+        const product = await db.find(Product, query)
 
-          await db.save(Product, product[0])
-        }
-        this.$router.push({path: '/'})
+        product[0].stock += this.counts[i]
+
+        await db.save(Product, product[0])
       }
+      this.$router.push({ path: '/' })
+    }
 
-    },
-    watch: {
-    search() {
-      if (this.search !== "") {
-        this.filterResults();
-        this.isOpen = true;
-      }
-      else {
-        this.isOpen = false;
+  },
+  watch: {
+    search () {
+      if (this.search !== '') {
+        this.filterResults()
+        this.isOpen = true
+      } else {
+        this.isOpen = false
       }
     }
   }
-  })
+})
 </script>
 
 <template>
@@ -167,13 +164,12 @@
         <div type="button" style="color: red" @click="remove(index)">刪除</div>
       </div>
     </div>
-       
 
     <div class="col-3 pe-2 mt-2">
       <form v-if="required" class="align-self-center position-relative w-100 me-2 was-validated">
         <input type="text" class="form-control" placeholder="請輸入條碼"
-          v-model="search" 
-          @keydown.enter.prevent="onEnter" 
+          v-model="search"
+          @keydown.enter.prevent="onEnter"
           @keyup.enter="find(); closefilter();"
           @keydown.up.prevent="onArrowUp"
           @keydown.down.prevent="onArrowDown"
@@ -191,8 +187,8 @@
       </form>
       <form v-else class="align-self-center position-relative w-100 me-2">
         <input type="text" class="form-control" placeholder="請輸入條碼"
-          v-model="search" 
-          @keydown.enter.prevent="onEnter" 
+          v-model="search"
+          @keydown.enter.prevent="onEnter"
           @keyup.enter="find(); closefilter();"
           @keydown.up.prevent="onArrowUp"
           @keydown.down.prevent="onArrowDown"

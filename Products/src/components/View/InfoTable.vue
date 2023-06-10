@@ -46,7 +46,7 @@
         query = QueryBuilder.equal('product_id', this.current_product.id!)
         let original_pictures = await db.find(Picture, query)
         for(let i = 0 ; i < original_pictures.length ; i++){
-          let picture_file:File = await axios.get(original_pictures[i].url)
+          let picture_file: File = await axios.get(original_pictures[i].url)
           this.pictures_files.push(picture_file)
           console.log(picture_file)
 

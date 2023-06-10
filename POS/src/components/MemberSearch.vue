@@ -1,50 +1,49 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
 import { Contact } from '../model/contact'
-export default defineComponent ({
-  data() {
+export default defineComponent({
+  data () {
     return {
-      phonenumber: "",
-      phonenumber_now: "",
-      membername: "",
-      isMember: false,
+      phonenumber: '',
+      phonenumber_now: '',
+      membername: '',
+      isMember: false
     }
   },
   methods: {
-    async checkMember() {
-      if(this.isMember){
+    async checkMember () {
+      if (this.isMember) {
         this.$emit('updatePhoneNumber', this.phonenumber_now)
       }
     },
-    async onlyNumber(evt: KeyboardEvent): Promise<void>{
+    async onlyNumber (evt: KeyboardEvent): Promise<void> {
       const keysAllowed: RegExp = /[0-9]/g
-      const keyPressed: string = evt.key;
-    
+      const keyPressed: string = evt.key
+
       if (!keysAllowed.exec(keyPressed)) {
         evt.preventDefault()
       }
     },
-    async findmember(){
+    async findmember () {
       const db = new Database()
-      let query = QueryBuilder.equal("phone_number", this.phonenumber)
-      let found = await db.find(Contact, query)
-      if (found[0]){
+      const query = QueryBuilder.equal('phone_number', this.phonenumber)
+      const found = await db.find(Contact, query)
+      if (found[0]) {
         this.membername = found[0].name
         this.isMember = true
         this.phonenumber_now = this.phonenumber
-      }
-      else{
+      } else {
         this.isMember = false
-        this.membername = ""
-        this.phonenumber_now = ""
+        this.membername = ''
+        this.phonenumber_now = ''
       }
-      this.phonenumber = ""
+      this.phonenumber = ''
     },
-    async removeMember(){
+    async removeMember () {
       this.membername = ''
       this.isMember = false
-      this.phonenumber_now = ""
+      this.phonenumber_now = ''
     }
   }
 })

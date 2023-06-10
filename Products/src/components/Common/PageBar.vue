@@ -1,79 +1,79 @@
 <script lang="ts">
-  import { defineComponent } from 'vue'
-  import { Database, QueryBuilder } from '@myback/sdk'
-  import { Product } from '@/model/product'
+import { defineComponent } from 'vue'
+import { Database } from '@myback/sdk'
+import { Product } from '@/model/product'
 
-  export default defineComponent({
-    props: ["page_size", "table_name", "query"],
-    data() { 
-      const page_list:Array<number> = []
-      
-      const page_list_starter:number = 1
-      const total_page:number = 0
-      const current_page:number = 1
+export default defineComponent({
+  props: ['page_size', 'table_name', 'query'],
+  data () {
+    const page_list:Array<number> = []
 
-      return{
-        page_list,
+    const page_list_starter:number = 1
+    const total_page:number = 0
+    const current_page:number = 1
 
-        page_list_starter,
-        total_page,
-        current_page,
-      }
-    },
-    methods: {
-      async reload() {
-        const db = new Database()
+    return {
+      page_list,
 
-        this.page_list_starter = 1
-        this.current_page = 1
-
-        if (this.query != null){
-          this.total_page = Math.ceil(Number(await db.count(Product, this.query))/this.page_size)
-        }
-        this.update()
-      },
-      async update(){    
-        this.removeHighlight()
-        this.page_list = []
-
-        for(let i = 0 ; i < 3 ; i++){
-          if(this.page_list_starter + i > this.total_page){
-            continue
-          }
-          this.page_list.push(this.page_list_starter + i)
-        }
-
-        await new Promise(f => setTimeout(f, 1))
-        let page = document.getElementById(this.table_name + this.current_page)
-        page?.classList.add('active')
-      },
-      async nextStarter(){
-        if(this.page_list_starter + 3 > this.total_page){
-          return
-        }
-        this.page_list_starter += 3
-        this.update()
-      },
-      async prevStarter(){
-        if(this.page_list_starter - 3 < 0){
-          return
-        }
-        this.page_list_starter -= 3
-        this.update()
-      },
-      async open(page: number){
-        this.removeHighlight()
-        this.current_page = page
-        this.$emit('update', page)
-        this.update()
-      },
-      removeHighlight(){
-        let page = document.getElementById(this.table_name + this.current_page)
-        page?.classList.remove('active')
-      }
-
+      page_list_starter,
+      total_page,
+      current_page
     }
-  })
+  },
+  methods: {
+    async reload () {
+      const db = new Database()
+
+      this.page_list_starter = 1
+      this.current_page = 1
+
+      if (this.query != null) {
+        this.total_page = Math.ceil(Number(await db.count(Product, this.query)) / this.page_size)
+      }
+      this.update()
+    },
+    async update () {
+      this.removeHighlight()
+      this.page_list = []
+
+      for (let i = 0; i < 3; i++) {
+        if (this.page_list_starter + i > this.total_page) {
+          continue
+        }
+        this.page_list.push(this.page_list_starter + i)
+      }
+
+      await new Promise(f => setTimeout(f, 1))
+      const page = document.getElementById(this.table_name + this.current_page)
+      page?.classList.add('active')
+    },
+    async nextStarter () {
+      if (this.page_list_starter + 3 > this.total_page) {
+        return
+      }
+      this.page_list_starter += 3
+      this.update()
+    },
+    async prevStarter () {
+      if (this.page_list_starter - 3 < 0) {
+        return
+      }
+      this.page_list_starter -= 3
+      this.update()
+    },
+    async open (page: number) {
+      this.removeHighlight()
+      this.current_page = page
+      this.$emit('update', page)
+      this.update()
+    },
+    removeHighlight () {
+      const page = document.getElementById(this.table_name + this.current_page)
+      page?.classList.remove('active')
+    }
+
+  }
+})
 
 </script>
 

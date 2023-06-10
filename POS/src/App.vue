@@ -10,8 +10,8 @@ import ProductInfo from './components/ProductInfo.vue'
 import MemberSearch from './components/MemberSearch.vue'
 import Payment from './components/Payment.vue'
 
-export default defineComponent ({
-  setup(){
+export default defineComponent({
+  setup () {
     const productListRef = ref<InstanceType<typeof ProductList>>()
     const calprice = (index: number) => {
       productListRef.value?.calprice(index)
@@ -44,7 +44,7 @@ export default defineComponent ({
     }
 
     const productInfoRef = ref<InstanceType<typeof ProductInfo>>()
-    const removeInfo = () =>{
+    const removeInfo = () => {
       productInfoRef.value?.removeinfo()
     }
 
@@ -78,107 +78,106 @@ export default defineComponent ({
       paymentRef
     }
   },
-  data() {
-    const products: Array<Product> = [];
-    const counts: Array<number> = [];
+  data () {
+    const products: Array<Product> = []
+    const counts: Array<number> = []
 
     return {
-      search: "",
+      search: '',
       products,
       counts,
       totalprice: 0,
-      actualIncome: ""
+      actualIncome: ''
     }
   },
   methods: {
-    async addcount(index: number) {
+    async addcount (index: number) {
       this.counts[index] += 1
     },
-    async updatetotalprice(){
+    async updatetotalprice () {
       this.totalprice = 0
-      for(var i = 0; i < this.getSubTotalLength()!; i++){
+      for (let i = 0; i < this.getSubTotalLength()!; i++) {
         this.totalprice += this.getSubTotal(i)!
       }
-      if(this.getBill()!){
+      if (this.getBill()!) {
         this.totalprice *= 1.05
         this.totalprice = Math.ceil(this.totalprice)
       }
     },
-    async updateProducts(products: Array<Product>) {
+    async updateProducts (products: Array<Product>) {
       this.products = products
     },
-    async updateCounts(counts: Array<number>) {
+    async updateCounts (counts: Array<number>) {
       this.counts = counts
     },
-    async complete(){
-      if(this.actualIncome != ""){
+    async complete () {
+      if (this.actualIncome !== '') {
         const time = new Date()
         const order = new Transaction()
-        let len = this.products.length    
-        let id = -1;
+        const len = this.products.length
         order.time = time
         order.total_price = Number(this.actualIncome)
         order.internet_marketing = this.getOnline()
         this.checkMember()
-        if(this.getPhoneNumber() != ""){
-          let query = QueryBuilder.equal("phone_number", String(this.getPhoneNumber()))
+        if (this.getPhoneNumber() !== '') {
+          const query = QueryBuilder.equal('phone_number', String(this.getPhoneNumber()))
           const db = new Database()
-          let found = await db.find(Contact, query)
-          if(found[0]){
+          const found = await db.find(Contact, query)
+          if (found[0]) {
             order.contact = found[0]
           }
         }
         const db = new Database()
         await db.save(Transaction, order)
 
-        for(let i = 0; i < len!; i++){
-          const db= new Database()
+        for (let i = 0; i < len!; i++) {
+          const db = new Database()
           const orderitem = new TransactionItem()
-          
-          let name =  String(this.products[i].name)
-          let query = QueryBuilder.equal("name", name)
-          let found = await db.find(Product, query)
-          
+
+          const name = String(this.products[i].name)
+          const query = QueryBuilder.equal('name', name)
+          const found = await db.find(Product, query)
+
           orderitem.id = order.id
           orderitem.product = found[0]
           orderitem.quantity = -1 * this.counts[i]
           orderitem.labeled_price = this.products[i].price
           orderitem.exchange_rate = 1
-          orderitem.discount = (this.getChangePrice(i) > 0 ?  this.getChangePrice(i) : 0)
+          orderitem.discount = (this.getChangePrice(i) > 0 ? this.getChangePrice(i) : 0)
           orderitem.paid_price = this.getSubTotal(i)
-          orderitem.note = ""
+          orderitem.note = ''
 
           await db.save(TransactionItem, orderitem)
         }
         this.resetall()
       }
     },
-    async resetall(){
+    async resetall () {
       this.removeMember()
       this.removeList()
       this.removeInfo()
       this.removePayment()
       this.totalprice = 0
-      this.actualIncome = ""
+      this.actualIncome = ''
     },
-    async onlyNumberAndDash(evt: KeyboardEvent): Promise<void>{
-      const keysAllowed: RegExp = /[0-9-]/g;
-      const keyPressed: string = evt.key;
-    
+    async onlyNumberAndDash (evt: KeyboardEvent): Promise<void> {
+      const keysAllowed: RegExp = /[0-9-]/g
+      const keyPressed: string = evt.key
+
       if (!keysAllowed.exec(keyPressed)) {
         evt.preventDefault()
       }
     },
-    async onlyNumber(evt: KeyboardEvent): Promise<void>{
+    async onlyNumber (evt: KeyboardEvent): Promise<void> {
       const keysAllowed: RegExp = /[0-9]/g
-      const keyPressed: string = evt.key;
-    
+      const keyPressed: string = evt.key
+
       if (!keysAllowed.exec(keyPressed)) {
         evt.preventDefault()
       }
     }
   },
-  components:{
+  components: {
     ProductList, ProductInfo, MemberSearch, Payment
   }
 })
@@ -187,25 +186,25 @@ export default defineComponent ({
 <template>
   <div class="d-flex flex-wrap">
     <div class="w-100 d-flex" style="height: 76vh;">
-      <ProductInfo 
+      <ProductInfo
         ref="productInfoRef"
         :product-in="products"
-        @addcount="addcount" 
-        @calprice="calprice" 
-        @addproduct="addProduct" 
+        @addcount="addcount"
+        @calprice="calprice"
+        @addproduct="addProduct"
       ></ProductInfo>
-      <ProductList 
-        ref="productListRef" 
+      <ProductList
+        ref="productListRef"
         @updatetotalprice="updatetotalprice"
         @updateProducts="updateProducts"
         @updateCounts="updateCounts"
         :products-in="products"
-        :counts-in="counts" 
+        :counts-in="counts"
       ></ProductList>
     </div>
     <div class="w-100 border rounded bg-white text-dark m-2 p-2">
       <div class="d-flex mt-3 mb-3">
-        <MemberSearch 
+        <MemberSearch
           ref="memberSearchRef"
           ></MemberSearch>
         <div class="d-flex col-5 me-3 justify-content-end">

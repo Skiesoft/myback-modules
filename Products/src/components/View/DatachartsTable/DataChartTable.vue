@@ -1,25 +1,24 @@
 <script lang="ts">
-  import { defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 
-  import TotalOrder from './DataBoxes/TotalOrder.vue';
-  import TotalSale from './DataBoxes/TotalSale.vue';
-  import StockChange from './Charts/StockChange.vue';
-  import AgeDistribute from './Charts/AgeDistribute.vue';
-  import GenderDistribute from './Charts/GenderDistribute.vue';
+import TotalOrder from './DataBoxes/TotalOrder.vue'
+import TotalSale from './DataBoxes/TotalSale.vue'
+import StockChange from './Charts/StockChange.vue'
+import AgeDistribute from './Charts/AgeDistribute.vue'
+import GenderDistribute from './Charts/GenderDistribute.vue'
 
-
-export default defineComponent ({
-  data(){
+export default defineComponent({
+  data () {
     return {
-      
+
     }
   },
-  mounted(){
+  mounted () {
   },
   methods: {
-    
+
   },
-  components: {TotalOrder, TotalSale, StockChange, AgeDistribute, GenderDistribute}
+  components: { TotalOrder, TotalSale, StockChange, AgeDistribute, GenderDistribute }
 })
 </script>
 

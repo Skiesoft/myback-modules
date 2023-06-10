@@ -1,25 +1,24 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
-import { Product } from '@/model/product'
-import { TransactionItem } from '@/model/transaction-item';
+import { TransactionItem } from '@/model/transaction-item'
 
 export default defineComponent({
-  data() {
-    const total_cost:number = 0;
-    return{
+  data () {
+    const total_cost:number = 0
+    return {
       total_cost
     }
   },
   methods: {
-    async update(){
-      const db = new Database
+    async update () {
+      const db = new Database()
       this.total_cost = 0
 
-      let query = QueryBuilder.greaterThan('quantity',0)
-      let sales = await db.find(TransactionItem,query)
+      const query = QueryBuilder.greaterThan('quantity', 0)
+      const sales = await db.find(TransactionItem, query)
 
-      for(let i = 0 ; i < sales.length ; i++){
+      for (let i = 0; i < sales.length; i++) {
         this.total_cost += sales[i].paid_price
       }
     }
@@ -31,7 +30,7 @@ export default defineComponent({
   <div class="col-6 box border rounded m-2 d-flex justify-content-center" style="height:100px">
     <i class="bi-coin m-3" style="font-size: 50px"></i>
     <div class="ms-1 mt-4 me-1">
-      <h5 >成本總額</h5> 
+      <h5 >成本總額</h5>
       <h5 >{{ total_cost }}</h5>
     </div>
   </div>

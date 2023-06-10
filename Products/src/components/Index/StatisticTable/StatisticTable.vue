@@ -1,24 +1,22 @@
 <script lang="ts">
-  import { defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 
-  import TotalCost from './TotalCost.vue'
-  import TotalProduct from './TotalProduct.vue'
-  import TotalOrder from './TotalOrder.vue'
-  import TotalSale from './TotalSale.vue'
+import TotalCost from './TotalCost.vue'
+import TotalProduct from './TotalProduct.vue'
+import TotalOrder from './TotalOrder.vue'
+import TotalSale from './TotalSale.vue'
 
+export default defineComponent({
+  data () {
 
+  },
+  methods: {
+    async update () {
 
-  export default defineComponent({
-    data() {
-    
-    },
-    methods: {
-      async update(){
-        
-      }
-    },
-    components: {TotalCost, TotalProduct, TotalOrder, TotalSale}
-  })
+    }
+  },
+  components: { TotalCost, TotalProduct, TotalOrder, TotalSale }
+})
 </script>
 
 <template>
@@ -32,5 +30,5 @@
         <TotalSale/>
     </div>
   </div>
-  
+
 </template>

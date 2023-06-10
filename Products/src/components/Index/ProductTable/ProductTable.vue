@@ -1,58 +1,56 @@
 <script lang="ts">
-  import { defineComponent } from 'vue'
-  import ProductList from './ProductList.vue'
-  import SearchBar from './SearchBar.vue'
-  import PageBar from '@/components/Common/PageBar.vue'
-  import { Query } from '@myback/sdk/build/api/query-builder'
-  import { QueryBuilder } from '@myback/sdk'
-  import { Product } from '@/model/product'
+import { defineComponent } from 'vue'
+import ProductList from './ProductList.vue'
+import SearchBar from './SearchBar.vue'
+import PageBar from '@/components/Common/PageBar.vue'
+import { Query } from '@myback/sdk/build/api/query-builder'
+import { QueryBuilder } from '@myback/sdk'
 
-  export default defineComponent({
-    data(){
+export default defineComponent({
+  data () {
       type ComponentData = {
         query:Query|null,
         page:number,
         page_size:number,
       }
-      return{
-        query:null,
-        page:1,
-        page_size:3,
+      return {
+        query: null,
+        page: 1,
+        page_size: 3
       } as ComponentData
+  },
+  methods: {
+    async pageBarReload () {
+      this.$emit('totalProductUpadte');
+      (this.$refs.PageBar as any).reload()
     },
-    methods: {
-      async pageBarReload(){
-        this.$emit('totalProductUpadte');
-        (this.$refs['PageBar'] as any).reload()
-      },
-      async changePage(page:number){
-        this.page = page
-        await new Promise(f => setTimeout(f, 1));
-        (this.$refs['ProductList'] as any).fetchProducts()
-      },
-      async changeQuery(query:Query|null){
-        if(query == null){
-          this.query = QueryBuilder.greaterThan('id',0)
-        }
-        else{
-          this.query = query
-        }
-        await new Promise(f => setTimeout(f, 1))
-        await (this.$refs['PageBar'] as any).reload()
-        (this.$refs['ProductList'] as any).fetchProducts()
-      },
-      async newProduct(){
-        (this.$refs['ProductList'] as any).edit(null)
-      },
-      async refresh(){
-        (this.$refs['ProductList'] as any).fetchProducts()
+    async changePage (page:number) {
+      this.page = page
+      await new Promise(f => setTimeout(f, 1));
+      (this.$refs.ProductList as any).fetchProducts()
+    },
+    async changeQuery (query:Query|null) {
+      if (query == null) {
+        this.query = QueryBuilder.greaterThan('id', 0)
+      } else {
+        this.query = query
       }
+      await new Promise(f => setTimeout(f, 1))
+      await (this.$refs.PageBar as any).reload()
+      (this.$refs.ProductList as any).fetchProducts()
     },
-    mounted(){
-      this.changeQuery(null)
+    async newProduct () {
+      (this.$refs.ProductList as any).edit(null)
     },
-    components: {ProductList, SearchBar, PageBar}
-  })
+    async refresh () {
+      (this.$refs.ProductList as any).fetchProducts()
+    }
+  },
+  mounted () {
+    this.changeQuery(null)
+  },
+  components: { ProductList, SearchBar, PageBar }
+})
 </script>
 
 <template>
