@@ -1,26 +1,26 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { Database, QueryBuilder } from '@myback/sdk'
+import { defineComponent } from 'vue'
+import { Database } from '@myback/sdk'
 import { Contact } from '../model/contact'
 
-export default defineComponent ({
-  data() {
+export default defineComponent({
+  data () {
     return {
-      newMembers:""
+      newMembers: ''
     }
   },
-  mounted() {
+  mounted () {
     this.updateNewMember()
   },
   methods: {
-    async updateNewMember() {
+    async updateNewMember () {
       const db = new Database()
       this.newMembers = String(await db.count(Contact))
     }
   }
 })
 </script>
-    
+
 <template>
   <div class="box col-3 m-3 p-4 bg-white text-dark border rounded">
     <h4>新增會員總數</h4>

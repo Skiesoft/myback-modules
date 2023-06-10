@@ -9,10 +9,28 @@ import NewMembers from './NewMembers.vue'
 import MemberGrowth from './MemberGrowth.vue'
 import AddMember from './AddMember.vue'
 import PageBar from './PageBar.vue'
-import Confirm from './Confirm.vue'
+import ConfirmModal from './ConfirmModal.vue'
 
-export default defineComponent ({
-  setup(){
+type DataType = {
+  query: Query,
+  members: Array<Contact>,
+  memberPrice: Array<number>,
+  current_page: number,
+  isshowadd: boolean,
+  search_target: string,
+  sort_element: string,
+  sort_order: 'asc' | 'desc' | undefined,
+  page_size: number,
+  list_product_count: number,
+  total_page: number,
+  sort_target: string,
+  memberpath: Array<string>,
+  isshowconfirm: boolean,
+  delete_member_id: number
+}
+
+export default defineComponent({
+  setup () {
     const pageBarRef = ref<InstanceType<typeof PageBar>>()
     const reload = () => {
       pageBarRef.value?.reload()
@@ -40,40 +58,34 @@ export default defineComponent ({
       updateNewMember
     }
   },
-  data() {
-    const members: Array<Contact> = []
-    const memberPrice: Array<number> = [];
-    const query:Query|null = QueryBuilder.greaterThan('id', -1)
-    const memberpath: Array<string> = []
-    let sort_order: ('asc' | 'desc' | undefined) = 'asc';
-
-    return{
-      query,
-      members,
-      memberPrice,
+  data () {
+    return {
+      query: QueryBuilder.greaterThan('id', -1),
+      members: [],
+      memberPrice: [],
       current_page: 1,
       isshowadd: false,
-      search_target: "",
+      search_target: '',
       sort_element: 'id',
-      sort_order,
+      sort_order: 'asc',
       page_size: 10,
       list_product_count: 0,
       total_page: 0,
       sort_target: 'id',
-      memberpath,
+      memberpath: [],
       isshowconfirm: false,
       delete_member_id: 0
-    }
+    } as DataType
   },
-  mounted() {
+  mounted () {
     this.updateMembers()
     this.changeQuery(null)
   },
   methods: {
-    async showAdd() {
+    async showAdd () {
       this.isshowadd = true
     },
-    async closeModal() {
+    async closeModal () {
       this.isshowadd = false
       this.isshowconfirm = false
       this.updateMemberGrowth()
@@ -82,103 +94,99 @@ export default defineComponent ({
       this.updateMembers()
       this.reload()
     },
-    async changePage(page:number) {
+    async changePage (page:number) {
       this.current_page = page
       await new Promise(f => setTimeout(f, 1))
       this.updateMembers()
     },
-    async sort(target: string) {
-        let prev_element = document.getElementById(this.sort_target)
-        prev_element?.classList.remove('sortUp')
-        prev_element?.classList.remove('sortDown')
+    async sort (target: string) {
+      const prev_element = document.getElementById(this.sort_target)
+      prev_element?.classList.remove('sortUp')
+      prev_element?.classList.remove('sortDown')
 
-        if (this.sort_target != target){
-          this.sort_target = target
-          this.sort_order = 'asc'
-          document.getElementById(target)?.classList.add('sortUp')
-          this.updateMembers()
-          return
-        }
-
-        if(this.sort_order == 'asc'){
-          this.sort_order = 'desc'
-          document.getElementById(target)?.classList.add('sortDown')
-        }
-        else{
-          this.sort_order = 'asc'
-          document.getElementById(target)?.classList.add('sortUp')
-        }
+      if (this.sort_target !== target) {
+        this.sort_target = target
+        this.sort_order = 'asc'
+        document.getElementById(target)?.classList.add('sortUp')
         this.updateMembers()
-      },
-    async updateMembers() {
+        return
+      }
+
+      if (this.sort_order === 'asc') {
+        this.sort_order = 'desc'
+        document.getElementById(target)?.classList.add('sortDown')
+      } else {
+        this.sort_order = 'asc'
+        document.getElementById(target)?.classList.add('sortUp')
+      }
+      this.updateMembers()
+    },
+    async updateMembers () {
       const db = new Database()
       let query
-      if(this.search_target == ''){
+      if (this.search_target === '') {
         query = QueryBuilder.orderBy(this.query, this.sort_element, this.sort_order)
-      }
-      else{
-        query = QueryBuilder.orderBy(QueryBuilder.like('name', '%' + this.search_target + '%'), this.sort_element, this.sort_order) 
+      } else {
+        query = QueryBuilder.orderBy(QueryBuilder.like('name', '%' + this.search_target + '%'), this.sort_element, this.sort_order)
       }
       this.members = await db.find(Contact, query, this.current_page - 1, this.page_size)
-      this.memberpath = this.members.map(function(element) {
+      this.memberpath = this.members.map(function (element) {
         return '/show/' + String(element.id)
       })
-      this.calculateTotalPrice();
+      this.calculateTotalPrice()
       this.list_product_count = Number(await db.count(Contact, query))
       this.total_page = Math.ceil(this.list_product_count / this.page_size)
     },
-    async calculateTotalPrice() {
-      let db = new Database();
-      for (let i = 0; i < this.members.length; i++){
-        let query = QueryBuilder.equal('member', this.members[i].id!);
-        let price = 0;
-        let found = await db.find(Transaction, query);
-        if(found.length != 0) {
-          for(let j = 0; j < found.length; j++) {
-            price += found[j].amount;
+    async calculateTotalPrice () {
+      const db = new Database()
+      for (let i = 0; i < this.members.length; i++) {
+        const query = QueryBuilder.equal('member', this.members[i].id!)
+        let price = 0
+        const found = await db.find(Transaction, query)
+        if (found.length !== 0) {
+          for (let j = 0; j < found.length; j++) {
+            price += found[j].amount
           }
         }
-        this.memberPrice[i] = price;
+        this.memberPrice[i] = price
       }
     },
-    async changeQuery(query:Query|null) {
-      if(query == null){
-        this.query = QueryBuilder.greaterThan('id',0)
-      }
-      else{
+    async changeQuery (query:Query|null) {
+      if (query === null) {
+        this.query = QueryBuilder.greaterThan('id', 0)
+      } else {
         this.query = query
       }
       await new Promise(f => setTimeout(f, 1))
       this.reload()
       this.updateMembers()
     },
-    async generateQuery() {
+    async generateQuery () {
       let query:Query|null = null
-      
-      if(this.search_target == ''){
+
+      if (this.search_target === '') {
         query = QueryBuilder.greaterThan('id', -1)
-      }
-      else{
+      } else {
         query = QueryBuilder.like('name', '%' + this.search_target + '%')
       }
       this.changeQuery(query)
     },
-    async deleteMember() {
-      const db = new Database();
-      let query = QueryBuilder.equal("id", this.delete_member_id);
-      let found = await db.find(Contact, query);
-      if (found.length != 0) {
-        await db.destroy(Contact, found[0]);
+    async deleteMember () {
+      const db = new Database()
+      const query = QueryBuilder.equal('id', this.delete_member_id)
+      const found = await db.find(Contact, query)
+      if (found.length !== 0) {
+        await db.destroy(Contact, found[0])
       }
-      this.closeModal();
+      this.closeModal()
     },
-    async deleteMemberConfirm(id: number | undefined) {
-      this.isshowconfirm = true;
-      this.delete_member_id = id!;
+    async deleteMemberConfirm (id: number | undefined) {
+      this.isshowconfirm = true
+      this.delete_member_id = id!
     }
   },
   components: {
-    TotalMembers, NewMembers, MemberGrowth, AddMember, PageBar, Confirm
+    TotalMembers, NewMembers, MemberGrowth, AddMember, PageBar, ConfirmModal
   }
 })
 </script>
@@ -206,9 +214,9 @@ export default defineComponent ({
           </div>
         </div>
 
-				<AddMember :show-modal-in="isshowadd" @close="closeModal"/>
-        <Confirm :confirm_message="'您確定要刪除此會員嗎?'" :confirm_option="'刪除'" :show-modal-in="isshowconfirm" @delete="deleteMember"/>
-      
+        <AddMember :show-modal-in="isshowadd" @close="closeModal"/>
+        <ConfirmModal :confirm_message="'您確定要刪除此會員嗎?'" :confirm_option="'刪除'" :show-modal-in="isshowconfirm" @delete="deleteMember"/>
+
         <div class="d-flex container mt-2">
           <div class="d-flex col-1">
             <input type="checkbox" class="ms-2 me-2">
@@ -242,7 +250,7 @@ export default defineComponent ({
           <div class="col-2 d-flex">
             <b class="align-self-center"></b>
           </div>
-          
+
         </div>
         <hr class="border border-dark opacity-100  mt-0 m-2" />
 

@@ -1,38 +1,39 @@
 <script lang="ts">
-import { Modal } from 'bootstrap';
-import { defineComponent } from 'vue';
+import { Modal } from 'bootstrap'
+import { defineComponent } from 'vue'
+
+type DataType = {
+  modal: Modal
+}
 
 export default defineComponent({
-  props:["confirm_message", "confirm_option", "showModalIn"],
-  emit:["delete"],
-  data(){
-    let modal: Modal;
-    return{
-      modal
-    }
+  props: ['confirm_message', 'confirm_option', 'showModalIn'],
+  emit: ['delete'],
+  data () {
+    return {} as DataType
   },
-  mounted(){
+  mounted () {
     this.modal = new Modal(document.getElementById('ConfirmModal')!)
   },
   methods: {
-    async showModal() {
-      this.modal.show();
+    async showModal () {
+      this.modal.show()
     },
-    async deleteMember() {
-      this.$emit('delete');
-      this.closeModal();
+    async deleteMember () {
+      this.$emit('delete')
+      this.closeModal()
     },
-    async closeModal() {
-      this.modal.hide();
+    async closeModal () {
+      this.modal.hide()
     }
   },
   watch: {
-    showModalIn() {
-      if (this.showModalIn == true) {
+    showModalIn () {
+      if (this.showModalIn === true) {
         this.showModal()
       }
     }
-  } 
+  }
 })
 
 </script>
