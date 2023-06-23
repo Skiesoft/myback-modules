@@ -30,26 +30,26 @@ export class Product extends Model {
     @attribute({ type: 'string' })
       unit: string = ''
 
-    @attribute({ type: 'float' })
-      weight: number = 0
+    @attribute({ type: 'float', nullable: true})
+      weight?: number
 
-    @attribute({ type: 'float' })
-      length: number = 0
+    @attribute({ type: 'float', nullable: true})
+      length?: number
 
-    @attribute({ type: 'float' })
-      width: number = 0
+    @attribute({ type: 'float', nullable: true})
+      width?: number
 
-    @attribute({ type: 'float' })
-      height: number = 0
+    @attribute({ type: 'float', nullable: true})
+      height?: number
 
-    @attribute({ type: 'string' })
-      info: string = ''
+    @attribute({ type: 'string', nullable: true})
+      info?: string
+
+    @attribute({ type: 'string', nullable: true})
+      note?: string
 
     @attribute({ type: 'int' })
       price: number = 0
-
-    @attribute({ type: 'string' })
-      note: string = ''
 
     @attribute({ type: 'int' })
       plan_on_ordering: number = 0
