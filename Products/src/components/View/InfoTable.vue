@@ -13,15 +13,13 @@
       const category: String = ''
       const categorys: Array<String> = []
 
-      const pictures_files: Array<File> = []  
-      const pictures: Array<Picture> = []
+      const pictures: Array<String> = []
 
       return {
         current_product,
         categorys,
         category,
         pictures,
-        pictures_files,
       }
     },
     mounted(){
@@ -29,9 +27,6 @@
     },
     methods: {
       async load(){
-        const storage = new Storage()
-        //clear storage's display folder
-
         if(this.$route.params.id == '0'){
           this.unlock()
           return
@@ -44,22 +39,14 @@
 
         query = QueryBuilder.equal('product_id', this.current_product.id!)
         let original_pictures = await db.find(Picture, query)
-        const reader = new FileReader();
         for(let i = 0 ; i < original_pictures.length ; i++){
-          let picture_blob = await axios.get(original_pictures[i].url, {responseType: 'blob'})
-          let picture_file = new File([picture_blob.data], "temp");
-          this.pictures_files.push(picture_file)
-          let picture_info = await storage.uploadWithAutoname(picture_file, 'display')
+          let picture_blob = (await axios.get(original_pictures[i].url)).data
 
-          let picture:Picture = new Picture()
-          picture.product_id = <Product>this.current_product
-          picture.file_name = picture_info.path
-          picture.url = picture_info.url
-          this.pictures.push(picture)
+          let url = window.URL.createObjectURL(picture_blob)
+          this.pictures.push(url)
         }
 
         this.lock()
-
       },
       async unlock(){
         document.getElementById('stock_input')?.removeAttribute('disabled')
@@ -93,6 +80,10 @@
           check = true
           message += "名稱是必填項目\n"
         }
+        if(this.current_product.status == ''){
+          check = true
+          message += "狀態是必填項目\n"
+        }
         if(this.categorys.length == 0){
           check = true
           message += "分類是必填項目\n"
@@ -125,33 +116,41 @@
         const storage = new Storage()
         await db.save(Product, <Product>this.current_product)
 
+
+        let pictures_blob: Array<Blob> = []
+        let pictures_data: Array<String> = []
+        for(let i = 0 ; i < this.pictures.length ; i++){
+          pictures_blob.push((await axios.get(<string>this.pictures[i] ,{responseType: 'blob'})).data)
+          pictures_data.push(await pictures_blob[i].text())
+        }
+
         const query = QueryBuilder.equal('product_id', this.current_product.id!)
         let original_pictures:Array<Picture> = await db.find(Picture, query)
-        let original_pictures_files:Array<File> = []
-
+        
         for(let i = 0 ; i < original_pictures.length ; i++){
-          original_pictures_files.push(await axios.get(original_pictures[i].url!))
+          let ori_picture_blob = (await axios.get(original_pictures[i].url!, {responseType: 'blob'})).data
+          let ori_picture_data = await ori_picture_blob.text()
+
+          let index = pictures_data.indexOf(ori_picture_data)
+          if(index == -1){
+            storage.destroy(original_pictures[i].file_name!)
+            db.destroy(Picture, original_pictures[i])
+          }
+          else{
+            pictures_blob.splice(index, 1)          }
         }
 
-        for(let i = 0 ; i < original_pictures_files.length ; i++){
-          let index = this.pictures_files.indexOf(original_pictures_files[i])
-          if(index == -1){
-            await storage.destroy(original_pictures[i].file_name!)
-            await db.destroy(Picture,original_pictures[i])
-          }
-        }
+        for(let i = 0 ; i < pictures_blob.length ; i++){
+          let picture_file = new File([pictures_blob[i]],"temp")
+          let picture_info = await storage.uploadWithAutoname(picture_file)
 
-        for(let i = 0 ; i < this.pictures_files.length ; i++){
-          let index = original_pictures_files.indexOf(this.pictures_files[i])
-          if(index == -1){
-            let picture_info = await storage.uploadWithAutoname(this.pictures_files[i], 'test')
-            let picture:Picture = new Picture()
-            picture.file_name = picture_info.path
-            picture.url = picture_info.url
-            picture.product_id = <Product>this.current_product;
-            db.save(Picture, picture)
-          }
+          let picture:Picture = new Picture()
+          picture.product_id = <Product>this.current_product
+          picture.file_name = picture_info.path
+          picture.url = picture_info.url
+          db.save(Picture, picture)
         }
+      
         this.$router.push({path: '/'})
       },
       async addTag(){
@@ -170,34 +169,18 @@
         this.categorys.splice(index, 1)
       },
       async pictureUpload(){
-        const storage = new Storage()
         let input_pictures = (<HTMLInputElement>document.getElementById("picture")).files
         if(input_pictures == null){
           return
         }
-        for(let i = 0; i < input_pictures.length ; i++){
-          this.pictures_files.push(input_pictures[i])
-          
-          let picture_info = await storage.uploadWithAutoname(input_pictures[i], 'display')
-          let picture:Picture = new Picture()
-          picture.file_name = picture_info.path
-          picture.url = picture_info.url
-          this.pictures.push(picture)
+        for(let i = 0 ; i < input_pictures.length ; i++){
+          let url = window.URL.createObjectURL(input_pictures.item(i)!)
+          this.pictures.push(url)
         }
-
       },
-      async pictureRemove(picture: Picture){
-        let file:File = await axios.get(picture.url!)
-        let index = this.pictures_files.indexOf(file)
-        this.pictures_files.splice(index, 1)
-
-        index = this.pictures.indexOf(picture)
+      async pictureRemove(picture: string){
+        let index = this.pictures.indexOf(picture)
         this.pictures.splice(index, 1)
-
-        const storage = new Storage()
-        if(picture.file_name != undefined){
-          storage.destroy(picture.file_name)
-        }
       }
     },
     components: {}
@@ -281,8 +264,8 @@
           <div class="d-flex flex-wrap mt-1">
             <div v-for="picture in pictures">
               <div class="align-item-start d-flex">
-                <img class="m-1" v-bind:src=picture.url style="width:400px">
-                <i class="bi bi-x" style="font-size: 25px; right: 25px" type="button" @click="pictureRemove(<Picture>picture)"></i> 
+                <img class="m-1" :src=picture style="width:400px">
+                <i class="bi bi-x" style="font-size: 25px; right: 25px" type="button" @click="pictureRemove(picture.toString())"></i> 
               </div>
             </div>
           </div>
