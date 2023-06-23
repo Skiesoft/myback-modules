@@ -4,7 +4,6 @@
   import { Product } from '@/model/product'
   import { Database, QueryBuilder, Storage } from '@myback/sdk'
   import axios from 'axios'
-
   
 
   export default defineComponent ({
@@ -45,12 +44,13 @@
 
         query = QueryBuilder.equal('product_id', this.current_product.id!)
         let original_pictures = await db.find(Picture, query)
+        const reader = new FileReader();
         for(let i = 0 ; i < original_pictures.length ; i++){
-          let picture_file: File = await axios.get(original_pictures[i].url)
+          let picture_blob = await axios.get(original_pictures[i].url, {responseType: 'blob'})
+          let picture_file = new File([picture_blob.data], "temp");
           this.pictures_files.push(picture_file)
-          console.log(picture_file)
-
           let picture_info = await storage.uploadWithAutoname(picture_file, 'display')
+
           let picture:Picture = new Picture()
           picture.product_id = <Product>this.current_product
           picture.file_name = picture_info.path
@@ -68,7 +68,7 @@
         document.getElementById('stock_input')?.setAttribute('disabled','')
       },
       async valid(){
-        let check:boolean = false;
+        let check:boolean = false; 
 
         let message:string = ""
         const db = new Database()
@@ -144,7 +144,7 @@
         for(let i = 0 ; i < this.pictures_files.length ; i++){
           let index = original_pictures_files.indexOf(this.pictures_files[i])
           if(index == -1){
-            let picture_info = await storage.uploadWithAutoname(this.pictures_files[i])
+            let picture_info = await storage.uploadWithAutoname(this.pictures_files[i], 'test')
             let picture:Picture = new Picture()
             picture.file_name = picture_info.path
             picture.url = picture_info.url
@@ -177,7 +177,7 @@
         }
         for(let i = 0; i < input_pictures.length ; i++){
           this.pictures_files.push(input_pictures[i])
-
+          
           let picture_info = await storage.uploadWithAutoname(input_pictures[i], 'display')
           let picture:Picture = new Picture()
           picture.file_name = picture_info.path

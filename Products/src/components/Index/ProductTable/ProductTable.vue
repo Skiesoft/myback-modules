@@ -13,10 +13,10 @@ export default defineComponent({
         page:number,
         page_size:number,
       }
-      return {
-        query: null,
-        page: 1,
-        page_size: 3
+      return{
+        query:null,
+        page:1,
+        page_size:9,
       } as ComponentData
   },
   methods: {
