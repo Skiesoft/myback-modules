@@ -13,10 +13,10 @@ export default defineComponent({
         page:number,
         page_size:number,
       }
-      return{
-        query:null,
-        page:1,
-        page_size:9,
+      return {
+        query: null,
+        page: 1,
+        page_size: 9
       } as ComponentData
   },
   methods: {
@@ -36,13 +36,13 @@ export default defineComponent({
         this.query = query
       }
       await new Promise(f => setTimeout(f, 1))
-      await (this.$refs.PageBar as any).reload()
+      await (this.$refs.PageBar as any).reload();
       (this.$refs.ProductList as any).fetchProducts()
     },
     async newProduct () {
       (this.$refs.ProductList as any).edit(null)
     },
-    async refresh () {
+    async update () {
       (this.$refs.ProductList as any).fetchProducts()
     }
   },

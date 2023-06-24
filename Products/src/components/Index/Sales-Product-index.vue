@@ -15,8 +15,9 @@ export default defineComponent({
   },
   methods: {
     async update () {
-      (this.$refs.totalProduct as any).update()
-      (this.$refs.totalCost as any).update()
+      (this.$refs.statisticTable as any).update();
+      (this.$refs.salesChart as any).update();
+      (this.$refs.productTable as any).update()
     }
   },
   components: { StatisticTable, SalesChart, ProductTable }
@@ -24,14 +25,15 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="m-3 d-flex">
-    <StatisticTable ref="statisticTable"/>
+  <div>
+    <div class="m-3 d-flex">
+      <StatisticTable ref="statisticTable"/>
 
-    <SalesChart ref="salesChart"/>
+      <SalesChart ref="salesChart"/>
+    </div>
+
+    <ProductTable ref="productTable" class="m-3"/>
   </div>
-
-  <ProductTable class="m-3"/>
-
 </template>
 
 <style>

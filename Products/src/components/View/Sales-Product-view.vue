@@ -26,13 +26,15 @@ export default defineComponent({
 </script>
 
 <template>
-  <router-link to="/" custom v-slot="{ navigate }">
-    <div class="m-3" type="button" @click="navigate">
-      <i class="bi bi-arrow-left" style="font-size: 25px"></i>
+  <div>
+    <router-link to="/" custom v-slot="{ navigate }">
+      <div class="m-3" type="button" @click="navigate">
+        <i class="bi bi-arrow-left" style="font-size: 25px"></i>
+      </div>
+    </router-link>
+    <div class="d-flex justify-content-center">
+      <DataChartTable id="DataChartTable"/>
+      <InfoTable/>
     </div>
-  </router-link>
-  <div class="d-flex justify-content-center">
-    <DataChartTable id="DataChartTable"/>
-    <InfoTable/>
   </div>
 </template>

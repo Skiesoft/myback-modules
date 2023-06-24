@@ -2,7 +2,7 @@
   import { defineComponent } from 'vue';
   import { Picture } from '@/model/picture'
   import { Product } from '@/model/product'
-  import { Database, QueryBuilder, Storage } from '@myback/sdk'
+  import { Config, Database, QueryBuilder, Storage } from '@myback/sdk'
   import axios from 'axios'
   
 
@@ -115,7 +115,7 @@
         const db = new Database()
         const storage = new Storage()
         await db.save(Product, <Product>this.current_product)
-
+        console.log("test")
 
         let pictures_blob: Array<Blob> = []
         let pictures_data: Array<String> = []
@@ -264,7 +264,7 @@
           <div class="d-flex flex-wrap mt-1">
             <div v-for="picture in pictures">
               <div class="align-item-start d-flex">
-                <img class="m-1" :src=picture style="width:400px">
+                <img class="m-1" :src=picture.toString() style="width:400px">
                 <i class="bi bi-x" style="font-size: 25px; right: 25px" type="button" @click="pictureRemove(picture.toString())"></i> 
               </div>
             </div>

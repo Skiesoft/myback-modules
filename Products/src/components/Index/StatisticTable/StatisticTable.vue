@@ -12,7 +12,10 @@ export default defineComponent({
   },
   methods: {
     async update () {
-
+      (this.$refs.totalProduct as any).update();
+      (this.$refs.totalCost as any).update();
+      (this.$refs.totalOrder as any).update();
+      (this.$refs.totalSale as any).update();
     }
   },
   components: { TotalCost, TotalProduct, TotalOrder, TotalSale }
@@ -22,12 +25,12 @@ export default defineComponent({
 <template>
   <div class="col-5">
       <div class="col-11 d-flex">
-        <TotalProduct/>
-        <TotalCost/>
+        <TotalProduct ref="totalProduct"/>
+        <TotalCost ref="totalCost"/>
       </div>
       <div class="col-11 d-flex">
-        <TotalOrder/>
-        <TotalSale/>
+        <TotalOrder ref="totalOrder"/>
+        <TotalSale ref="totalSale"/>
     </div>
   </div>
 
