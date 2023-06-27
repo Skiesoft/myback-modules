@@ -40,8 +40,8 @@
         query = QueryBuilder.equal('product_id', this.current_product.id!)
         let original_pictures = await db.find(Picture, query)
         for(let i = 0 ; i < original_pictures.length ; i++){
-          let picture_blob = (await axios.get(original_pictures[i].url)).data
-
+          
+          let picture_blob = (await axios.get(original_pictures[i].url, {responseType: 'blob'} )).data  
           let url = window.URL.createObjectURL(picture_blob)
           this.pictures.push(url)
         }
@@ -108,6 +108,7 @@
         this.save()
       },
       async save(){
+        document.getElementById('save')?.setAttribute('disabled','disabled')
         this.current_product.category = this.categorys.join('/')
         if(this.$route.params.id == '0'){
           this.current_product.create_time = new Date()
@@ -115,7 +116,6 @@
         const db = new Database()
         const storage = new Storage()
         await db.save(Product, <Product>this.current_product)
-        console.log("test")
 
         let pictures_blob: Array<Blob> = []
         let pictures_data: Array<String> = []
@@ -137,7 +137,8 @@
             db.destroy(Picture, original_pictures[i])
           }
           else{
-            pictures_blob.splice(index, 1)          }
+            pictures_blob.splice(index, 1)
+          }
         }
 
         for(let i = 0 ; i < pictures_blob.length ; i++){
@@ -282,7 +283,7 @@
             <input id="stock_input" type="number" class="form-control p-1" v-model="current_product.stock">
           </div>
           <div class="d-flex justify-content-end mt-2"> 
-            <button type="button" class="btn btn-primary ms-3 col-2 fw-bold" @click="valid()">儲存</button>
+            <button id="save" type="button" class="btn btn-primary ms-3 col-2 fw-bold" @click="valid()">儲存</button>
           </div>
         </div >
   </div>

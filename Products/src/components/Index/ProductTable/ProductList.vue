@@ -47,6 +47,7 @@ export default defineComponent({
     },
     async fetchProducts () {
       const db = new Database()
+      await new Promise(f => setTimeout(f, 1))
       this.products = await db.find(Product, QueryBuilder.orderBy(this.query, this.sort_element, this.sort_order), this.page - 1, this.page_size)
     },
     async edit (product:Product) {
@@ -58,7 +59,8 @@ export default defineComponent({
     },
     async deleteProduct () {
       const db = new Database()
-      db.destroy(Product ,<Product>this.delete_target)
+      await db.destroy(Product ,<Product>this.delete_target)
+      this.fetchProducts()
     }
   },
   components: { Confirm }

@@ -13,7 +13,7 @@ export default defineComponent({
   methods: {
     async update () {
       const db = new Database()
-      this.total_orders = Number(await db.sum(Transaction, 'stock'))
+      //this.total_orders = Number(await db.sum(Transaction, 'stock'))
     }
   }
 })
