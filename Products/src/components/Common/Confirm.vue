@@ -13,7 +13,7 @@ export default defineComponent({
       } as ComponentData
   },
   mounted () {
-    //console.log(`${this.table_name}Confirm`)
+    // console.log(`${this.table_name}Confirm`)
     this.modal = new Modal(document.getElementById(`${this.table_name}Confirm`)!)
   },
   methods: {

@@ -30,22 +30,22 @@ export class Product extends Model {
     @attribute({ type: 'string' })
       unit: string = ''
 
-    @attribute({ type: 'float', nullable: true})
+    @attribute({ type: 'float', nullable: true })
       weight?: number
 
-    @attribute({ type: 'float', nullable: true})
+    @attribute({ type: 'float', nullable: true })
       length?: number
 
-    @attribute({ type: 'float', nullable: true})
+    @attribute({ type: 'float', nullable: true })
       width?: number
 
-    @attribute({ type: 'float', nullable: true})
+    @attribute({ type: 'float', nullable: true })
       height?: number
 
-    @attribute({ type: 'string', nullable: true})
+    @attribute({ type: 'string', nullable: true })
       info?: string
 
-    @attribute({ type: 'string', nullable: true})
+    @attribute({ type: 'string', nullable: true })
       note?: string
 
     @attribute({ type: 'int' })

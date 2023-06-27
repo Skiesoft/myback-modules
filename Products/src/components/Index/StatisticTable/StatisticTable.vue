@@ -15,7 +15,7 @@ export default defineComponent({
       (this.$refs.totalProduct as any).update();
       (this.$refs.totalCost as any).update();
       (this.$refs.totalOrder as any).update();
-      (this.$refs.totalSale as any).update();
+      (this.$refs.totalSale as any).update()
     }
   },
   components: { TotalCost, TotalProduct, TotalOrder, TotalSale }

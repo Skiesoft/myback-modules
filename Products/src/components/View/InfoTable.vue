@@ -46,7 +46,7 @@
           this.pictures.push(url)
         }
 
-        this.lock()
+        await this.lock()
       },
       async unlock(){
         document.getElementById('stock_input')?.removeAttribute('disabled')

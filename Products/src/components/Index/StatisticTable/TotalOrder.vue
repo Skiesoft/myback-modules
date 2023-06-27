@@ -1,7 +1,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { Database } from '@myback/sdk'
-import { Transaction } from '@/model/transaction'
+// import { Database } from '@myback/sdk'
 
 export default defineComponent({
   data () {
@@ -12,8 +11,8 @@ export default defineComponent({
   },
   methods: {
     async update () {
-      const db = new Database()
-      //this.total_orders = Number(await db.sum(Transaction, 'stock'))
+      // const db = new Database()
+      // this.total_orders = Number(await db.sum(Transaction, 'stock'))
     }
   }
 })
