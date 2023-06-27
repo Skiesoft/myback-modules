@@ -3,6 +3,7 @@ import { Product } from '@/model/product'
 import { Database, QueryBuilder } from '@myback/sdk'
 import { defineComponent } from 'vue'
 import Confirm from '@/components/Common/Confirm.vue'
+import { Picture } from '@/model/picture'
 
 export default defineComponent({
   emits: ['open'],
@@ -58,7 +59,15 @@ export default defineComponent({
       (this.$refs.Confirm as any).show()
     },
     async deleteProduct () {
-      const db = new Database()
+      const db = new Database() 
+      const query = QueryBuilder.equal('product_id', this.delete_target?.id!)
+
+      let pictures = await db.find(Picture, query)
+      
+      for(let i = 0 ; i < pictures.length; i++){
+        await db.destroy(Picture, pictures[i])
+      }
+
       await db.destroy(Product ,<Product>this.delete_target)
       this.fetchProducts()
     }
