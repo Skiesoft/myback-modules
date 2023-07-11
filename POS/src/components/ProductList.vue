@@ -3,35 +3,35 @@ import { defineComponent } from 'vue'
 import { Product } from '../model/product'
 
 export default defineComponent({
-  props:['productsIn', 'countsIn'],
-  
-  data() {
-    const products: Array<Product> =  this.productsIn!
+  props: ['productsIn', 'countsIn'],
+
+  data () {
+    const products: Array<Product> = this.productsIn!
     const counts: Array<number> = this.countsIn!
     const subTotal: Array<number> = []
     const reasons: Array<string> = []
     const changeprices: Array<number> = []
-    
+
     return {
       products,
       counts,
       subTotal,
       reasons,
-      changeprices,
+      changeprices
     }
   },
   methods: {
-    async add(product: Product){
+    async add (product: Product) {
       this.products.push(product)
       this.counts.push(1)
       this.subTotal.push(product.price!)
-      this.reasons.push("")
+      this.reasons.push('')
       this.changeprices.push()
       this.$emit('updatetotalprice')
       this.$emit('updateProducts', this.products)
       this.$emit('updateCounts', this.counts)
     },
-    async removeall(){
+    async removeall () {
       this.products = []
       this.counts = []
       this.subTotal = []
@@ -41,41 +41,41 @@ export default defineComponent({
       this.$emit('updateProducts', this.products)
       this.$emit('updateCounts', this.counts)
     },
-    async calprice(index: number){
+    async calprice (index: number) {
       let subtotalprice = Number(this.counts[index]) * Number(this.products[index].price)
-      if(this.changeprices[index]){
+      if (this.changeprices[index]) {
         subtotalprice = (Number(this.products[index].price) - this.changeprices[index]) * this.counts[index]
       }
       this.subTotal[index] = subtotalprice
       this.$emit('updatetotalprice')
     },
-    async onlyNumberAndDash(evt: KeyboardEvent): Promise<void>{
-      const keysAllowed: RegExp = /[0-9-]/g;
-      const keyPressed: string = evt.key;
-    
+    async onlyNumberAndDash (evt: KeyboardEvent): Promise<void> {
+      const keysAllowed: RegExp = /[0-9-]/g
+      const keyPressed: string = evt.key
+
       if (!keysAllowed.exec(keyPressed)) {
         evt.preventDefault()
       }
     },
-    async onlyNumber(evt: KeyboardEvent): Promise<void>{
+    async onlyNumber (evt: KeyboardEvent): Promise<void> {
       const keysAllowed: RegExp = /[0-9]/g
-      const keyPressed: string = evt.key;
-    
+      const keyPressed: string = evt.key
+
       if (!keysAllowed.exec(keyPressed)) {
         evt.preventDefault()
       }
     },
-    async countAdd(index: number){
+    async countAdd (index: number) {
       this.counts[index] = Number(this.counts[index])
       this.counts[index] += 1
       this.calprice(index)
     },
-    async countMinus(index: number){
+    async countMinus (index: number) {
       this.counts[index] = Number(this.counts[index])
       this.counts[index] -= 1
       this.calprice(index)
     },
-    async remove(index: number) {
+    async remove (index: number) {
       this.products.splice(index, 1)
       this.counts.splice(index, 1)
       this.subTotal.splice(index, 1)
@@ -84,7 +84,7 @@ export default defineComponent({
       this.$emit('updatetotalprice')
       this.$emit('updateProducts', this.products)
       this.$emit('updateCounts', this.counts)
-    },
+    }
   }
 })
 

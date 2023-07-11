@@ -1,21 +1,12 @@
 import { createApp } from 'vue'
 import { SDK } from '@myback/sdk'
 import App from './App.vue'
-
-declare global {
-  interface Window {
-    API_TOKEN: string
-    ENDPOINT: string
-    VERSION: string
-    DATABASE: string
-  }
-}
+import { router } from './route'
 
 SDK.init({
-  API_TOKEN: window.API_TOKEN ?? 'DEVELOPMENT',
-  ENDPOINT: window.ENDPOINT ?? 'http://localhost:3000',
-  VERSION: 'v1',
-  DATABASE: window.DATABASE ?? 'default'
+  API_TOKEN: 'ypkpAHjYvS3tqAupuoY0mfv9CmIgNeM0UGccOnMmuVVtu9ImGdIVRq6hgmGxrwZ9',
+  DATABASE: '639e216f-1880-480e-ab86-5f54f8279453',
+  STORAGE: '8903024b-2a54-4f6e-9a5f-fe0af6c13447'
 })
 
-createApp(App).mount('#app')
+createApp(App).use(router).mount('#app')
