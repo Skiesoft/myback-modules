@@ -58,9 +58,9 @@ export default defineComponent({
       this.subTotal.splice(index, 1)
     },
     async find () {
-      let loadingElement =  document.getElementById('loading')
+      const loadingElement = document.getElementById('loading')
       if (loadingElement) {
-        loadingElement.style.visibility = "visible"
+        loadingElement.style.visibility = 'visible'
       }
       const db = new Database()
       const indexofupc = this.products.map(function (value) { return value.upc }).indexOf(this.search)
@@ -94,7 +94,7 @@ export default defineComponent({
         }
       }
       if (loadingElement) {
-        loadingElement.style.visibility = "hidden"
+        loadingElement.style.visibility = 'hidden'
       }
       this.results = []
     },
@@ -107,20 +107,20 @@ export default defineComponent({
       if (this.subTotal.length > 0) {
         this.subTotal.forEach(element => {
           this.totalPrice += element
-        });
+        })
       }
     },
     async filterResults () {
-      let loadingElement =  document.getElementById('loading')
+      const loadingElement = document.getElementById('loading')
       if (loadingElement) {
-        loadingElement.style.visibility = "visible"
+        loadingElement.style.visibility = 'visible'
       }
       const db = new Database()
       const query = QueryBuilder.like('upc', '%' + this.search + '%')
       const found = await db.find(Product, query)
       this.results = found.map(x => x.upc)
       if (loadingElement) {
-        loadingElement.style.visibility = "hidden"
+        loadingElement.style.visibility = 'hidden'
       }
     },
     async onEnter () {
@@ -276,7 +276,7 @@ export default defineComponent({
       <button id='add' class="btn btn-primary" @click="addProduct()">新增入庫</button>
     </div>
   </div>
-  
+
 </template>
 
 <style scoped>
