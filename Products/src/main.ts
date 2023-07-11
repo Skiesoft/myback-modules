@@ -4,9 +4,9 @@ import App from './App.vue'
 import { router } from './route'
 
 SDK.init({
-  API_TOKEN: 'YbE7jTXeaIaoPIENWOP9KLN7aDPBG2lw7mn0KGQ2fGeZK1oxlSCLmZxiBaQOvw4A',
-  DATABASE: '73ee92ab-4dc2-43f9-95cb-acc868579a1d',
-  STORAGE: '168c2aae-e4c3-40d3-a773-75bf22f8d81f'
+  API_TOKEN: 'ypkpAHjYvS3tqAupuoY0mfv9CmIgNeM0UGccOnMmuVVtu9ImGdIVRq6hgmGxrwZ9',
+  DATABASE: '639e216f-1880-480e-ab86-5f54f8279453',
+  STORAGE: '8903024b-2a54-4f6e-9a5f-fe0af6c13447'
 })
 
 createApp(App).use(router).mount('#app')
