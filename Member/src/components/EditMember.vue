@@ -38,7 +38,6 @@ export default defineComponent({
       const query = QueryBuilder.equal('id', this.memberId)
       const found = await db.find(Contact, query)
       if (found.length !== 0) {
-        console.log('found')
         this.member = found[0]
         this.name = found[0].name
         this.phoneNumber = found[0].phone_number

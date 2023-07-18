@@ -140,12 +140,12 @@ export default defineComponent({
     async calculateTotalPrice () {
       const db = new Database()
       for (let i = 0; i < this.members.length; i++) {
-        const query = QueryBuilder.equal('member', this.members[i].id!)
+        const query = QueryBuilder.equal('contact', this.members[i].id!)
         let price = 0
         const found = await db.find(Transaction, query)
         if (found.length !== 0) {
           for (let j = 0; j < found.length; j++) {
-            price += found[j].amount
+            price += found[j].total_price
           }
         }
         this.memberPrice[i] = price
@@ -197,14 +197,14 @@ export default defineComponent({
       <h1 class="p-3 col-11"><b>會員</b></h1>
     </div>
     <div class="d-flex justify-content-center">
-      <TotalMembers ref="totalMembersRef"/>
-      <NewMembers ref="newMembersRef"/>
-      <MemberGrowth ref="memberGrowthRef"/>
+      <TotalMembers ref="totalMembers"/>
+      <NewMembers ref="newMembers"/>
+      <MemberGrowth ref="memberGrowth"/>
     </div>
     <div class="d-flex justify-content-center mt-3" style=" height: 450px">
       <div class="col-11 bg-white border rounded p-4">
         <div class="d-flex justify-content-between">
-          <PageBar ref="pageBarRef" :table_name="'Member'" :page_size="page_size" :query="query" @update="changePage"/>
+          <PageBar ref="pageBar" :table_name="'Member'" :page_size="page_size" :query="query" @update="changePage"/>
           <div class="d-flex">
             <div class="flex-grow-1 me-2">
               <input type="text" class="form-control" placeholder="Search" v-model="search_target" @input="generateQuery">
@@ -235,7 +235,7 @@ export default defineComponent({
           </div>
           <div class="col-3 d-flex">
             <b class="align-self-center">層級</b>
-            <div class="d-flex flex-column ms-1" @click="sort('role')">
+            <div class="d-flex flex-column ms-1">
               <div class="arrow-up"><i class="bi bi-caret-up-fill" type="button" style="font-size: 1px"></i></div>
               <div class="arrow-down"><i class="bi bi-caret-down-fill" type="button" style="font-size: 1px"></i></div>
             </div>
@@ -261,7 +261,7 @@ export default defineComponent({
               <div class="ms-2">{{ member.id }}</div>
             </div>
             <div class="col-3">{{ member.name }}</div>
-            <!-- <div class="col-3">{{ member.role }}</div> -->
+            <div class="col-3"></div>
             <div class="col-3">{{ memberPrice[i] }}</div>
             <div class="d-flex col-2">
               <router-link :to="{ path: memberpath[i] }" class="me-3" style="color: #3B587A">詳細資料</router-link>
