@@ -12,11 +12,6 @@ export default defineComponent({
     }
   },
   methods: {
-    async checkMember () {
-      if (this.isMember) {
-        this.$emit('updatePhoneNumber', this.phonenumber_now)
-      }
-    },
     async onlyNumber (evt: KeyboardEvent): Promise<void> {
       const keysAllowed: RegExp = /[0-9]/g
       const keyPressed: string = evt.key
@@ -27,7 +22,7 @@ export default defineComponent({
     },
     async findmember () {
       const db = new Database()
-      const query = QueryBuilder.equal('phone_number', this.phonenumber)
+      const query = QueryBuilder.equal('phone', this.phonenumber)
       const found = await db.find(Contact, query)
       if (found[0]) {
         this.membername = found[0].name

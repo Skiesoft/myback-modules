@@ -2,7 +2,6 @@
 import { defineComponent } from 'vue'
 import { Database, QueryBuilder } from '@myback/sdk'
 import { Product } from '../model/product'
-import { Contact } from '../model/contact'
 
 export default defineComponent({
   props: ['productIn'],
@@ -140,62 +139,10 @@ export default defineComponent({
     async closefilter () {
       this.isOpen = false
     },
-
-    // test function start
-    async testaddproduct () {
-      const namelst: Array<string> = ['宇宙戰艦大和號2199 - 獨立戰鬥指揮艦 Deusula The 2nd Core Ship (1/1000)',
-        '艦隊これくしょん SPM - ”霞改二-礼号作戰-”',
-        'M.S.G. D-721 - 關節、軸棒、關節固定座 3 [黑]',
-        'Figure-rise-S - Masked Rider Den-O Sword Form & Plat Form 電王 劍模式 & 月台模式',
-        'Figure-rise-S - Masked Rider Den-O Rod Form & Plat Form 電王 杖模式 & 月台模式',
-        'Figure-rise-S - Masked Rider Den-O AX Form & Plat Form 電王 斧模式 & 月台模式',
-        'Figure-rise-S - Masked Rider Den-O Gun Form & Plat Form 電王 槍模式 & 月台模式',
-        'CL#005 Mine bluE#010 - [妄想…原付と、女の子と、桃源鄉]',
-        '情景モジルパーツ - 色粉-深綠',
-        'G.F.F. Metal Composite #1013 - RX0[N] Unicorn Gundam 02 Banshee Norn[Awakening Ver.](ROUSE DRIVE)',
-        '袁 & 1', '袁 - 1', '袁 [ 1', '袁 ] 1', '袁 > 1', '袁 < 1', '袁 # 1', '袁 " 1', '袁 ” 1', '袁 ( 1', '袁 ) 1', '袁 / 1', '袁 . 1']
-      for (let i = 1; i <= namelst.length; i++) {
-        const product = new Product()
-
-        product.upc = String(i * 100)
-        product.name = namelst[i]
-        product.category = ''
-        product.status = ''
-        product.create_time = new Date()
-        product.manufacturer = ''
-        product.unit = ''
-        product.weight = 0
-        product.length = 0
-        product.width = 0
-        product.height = 0
-        product.info = ''
-        product.price = Math.ceil((Math.random()) * 100)
-        product.note = ''
-        product.stock = Math.ceil((Math.random()) * 10)
-
-        const db = new Database()
-        await db.save(Product, product)
-      }
-    },
-    async testaddmember () {
-      const phonenumbers = ['0987654321', '0912345678', '0974185263']
-      const names = ['王小明', '王小美', '王大明']
-      for (let i = 0; i < phonenumbers.length; i++) {
-        const member = new Contact()
-        member.phone = phonenumbers[i]
-        member.name = names[i]
-        member.email = 'test' + String(i) + '@test.com'
-        member.create_date = new Date()
-        const db = new Database()
-        await db.save(Contact, member)
-      }
-    }
-    // test function end
-
   },
   watch: {
     search () {
-      if (this.search !=== '') {
+      if (this.search !== '') {
         this.filterResults()
         this.isOpen = true
       } else {
@@ -269,9 +216,6 @@ export default defineComponent({
       <h3 class="align-self-center d-flex justify-content-center col-2 m-2 ms-0 me-0"><b>庫存</b></h3>
       <h3 class="m-2 ms-0 p-0">{{ stock }}</h3>
     </div>
-
-    <div><button type="button" @click="testaddproduct">add product to db</button></div>
-    <div><button type="button" @click="testaddmember">add member to db</button></div>
 
     <div class="d-flex justify-content-center" style="height:30%;"><img src=""></div>
     <div class="d-flex justify-content-center" style="height:30%"><img src=""></div>
