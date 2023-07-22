@@ -19,7 +19,7 @@ export default defineComponent({
       const sales = await db.find(TransactionItem, query)
 
       for (let i = 0; i < sales.length; i++) {
-        this.total_cost += sales[i].paid_price
+        this.total_cost += sales[i].paid_price*sales[i].quantity
       }
     }
   }
