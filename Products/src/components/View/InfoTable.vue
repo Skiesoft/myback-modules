@@ -109,6 +109,10 @@
       },
       async save(){
         document.getElementById('save')?.setAttribute('disabled','disabled')
+        let spinner = document.getElementById('spinner')
+        if(spinner){
+          spinner.style.display = 'inline-block'
+        }
         this.current_product.category = this.categorys.join('/')
         if(this.$route.params.id == '0'){
           this.current_product.create_time = new Date()
@@ -283,7 +287,8 @@
             <input id="stock_input" type="number" class="form-control p-1" v-model="current_product.stock">
           </div>
           <div class="d-flex justify-content-end mt-2"> 
-            <button id="save" type="button" class="btn btn-primary ms-3 col-2 fw-bold" @click="valid()">儲存</button>
+            <button id="save" type="button" class="btn btn-primary ms-3 col-2 fw-bold" @click="valid()">儲存 <div id="spinner" class="spinner-border text-light spinner-border-sm" role="status" style="display: none"></div></button>
+            
           </div>
         </div >
   </div>
