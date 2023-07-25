@@ -26,7 +26,6 @@ export default defineComponent({
       const found = await db.find(Contact, query)
       if (found[0]) {
         this.member = found[0]
-        console.log(this.member)
         this.createDate = String(this.member.create_date?.getFullYear()) + ('/') + String(this.member.create_date?.getMonth()! + 1) + ('/') + String(this.member.create_date?.getDate())
         this.calculateTotalPrice()
       }
@@ -85,10 +84,6 @@ export default defineComponent({
               <div class="d-flex justify-content-between">
                 <div>加入時間:</div>
                 <div>{{ createDate }}</div>
-              </div>
-              <div class="d-flex justify-content-between">
-                <div>層級:</div>
-                <!-- <div>{{ member.role }}</div> -->
               </div>
               <div class="d-flex justify-content-between">
                 <div>累積消費總額:</div>

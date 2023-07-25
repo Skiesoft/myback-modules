@@ -7,14 +7,12 @@ export default defineComponent({
   props: ['page_size', 'table_name', 'query'],
   data () {
     const page_list:Array<number> = []
-
     const page_list_starter:number = 1
     const total_page:number = 0
     const current_page:number = 1
 
     return {
       page_list,
-
       page_list_starter,
       total_page,
       current_page
