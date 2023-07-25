@@ -145,7 +145,6 @@ export default defineComponent({
           orderitem.note = ''
 
           await db.save(TransactionItem, orderitem)
-          console.log('pass'+String(i))
         }
         this.resetall()
       }

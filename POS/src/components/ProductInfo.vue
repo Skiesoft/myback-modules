@@ -138,7 +138,7 @@ export default defineComponent({
     },
     async closefilter () {
       this.isOpen = false
-    },
+    }
   },
   watch: {
     search () {
