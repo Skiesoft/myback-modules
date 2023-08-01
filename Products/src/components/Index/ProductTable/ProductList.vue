@@ -76,6 +76,12 @@ export default defineComponent({
       const db = new Database() 
       const query = QueryBuilder.equal('product_id', this.delete_target?.id!)
 
+      let tag_links = await db.find(ProductTag, query)
+
+      for(let i = 0 ; i < tag_links.length ; i++){
+        await db.destroy(ProductTag,tag_links[i])
+      }
+
       let pictures = await db.find(Picture, query)
       
       for(let i = 0 ; i < pictures.length; i++){
