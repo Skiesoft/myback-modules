@@ -4,6 +4,7 @@ import { Database, QueryBuilder } from '@myback/sdk'
 import { defineComponent } from 'vue'
 import Confirm from '@/components/Common/Confirm.vue'
 import { Picture } from '@/model/picture'
+import { ProductTag } from '@/model/product-tag'
 
 export default defineComponent({
   emits: ['open'],
@@ -14,13 +15,15 @@ export default defineComponent({
         products:Array<Product>
         sort_element:string
         sort_order:'asc'|'desc'
+        product_tags:Array<String>
       }
 
       return {
         products: {},
         delete_target: null,
         sort_element: 'id',
-        sort_order: 'asc'
+        sort_order: 'asc',
+        product_tags: {}
       } as ComponentData
   },
   methods: {
@@ -50,6 +53,17 @@ export default defineComponent({
       const db = new Database()
       await new Promise(f => setTimeout(f, 1))
       this.products = await db.find(Product, QueryBuilder.orderBy(this.query, this.sort_element, this.sort_order), this.page - 1, this.page_size)
+
+      for(let i = 0 ;  i < this.products.length ; i++){
+        let query = QueryBuilder.equal("product_id", this.products[i].id!)
+        let temp:Array<ProductTag> = await db.find(ProductTag, query)
+        
+        let str:string = ''
+        for(let j = 0 ; j < temp.length ; j++){
+          str += temp[j].tag!.name
+          str += '/'
+        }
+      }
     },
     async edit (product:Product) {
       this.$router.push({ path: '/view/' + product.id })
@@ -132,11 +146,11 @@ export default defineComponent({
 
     <hr class="border border-dark opacity-100  m-2" />
 
-    <div v-for="product in products">
+    <div v-for="(product, i) in products">
       <div class="d-flex container mt-2">
         <div class="me-5" style="width: 31px">{{ product.id }}</div>
         <div class="col-2 overflowhidden me-2">{{ product.name }}</div>
-        <div class="col overflowhidden">{{ product.category }}</div>
+        <div class="col overflowhidden">{{ product_tags[i] }}</div>
         <div class="col">{{ product.status }}</div>
         <div class="col">{{ product.stock }}</div>
         <div class="col">{{ product.create_time?.toISOString().split('T')[0] }}</div>
