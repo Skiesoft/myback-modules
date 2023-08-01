@@ -16,9 +16,6 @@ export class Product extends Model {
       name: string = ''
 
     @attribute({ type: 'string' })
-      category: string = ''
-
-    @attribute({ type: 'string' })
       status: string = ''
 
     @attribute({ type: 'date' })

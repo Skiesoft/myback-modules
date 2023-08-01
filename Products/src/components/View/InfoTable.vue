@@ -4,20 +4,23 @@
   import { Product } from '@/model/product'
   import { Config, Database, QueryBuilder, Storage } from '@myback/sdk'
   import axios from 'axios'
+  import { Tag } from '@/model/tag';
+  import { ProductTag } from '@/model/product-tag';
   
 
   export default defineComponent ({
     data(){
       const current_product:Product = new Product()
 
+      const tags: Array<Tag> = []
+
       const category: String = ''
-      const categorys: Array<String> = []
 
       const pictures: Array<String> = []
 
       return {
         current_product,
-        categorys,
+        tags,
         category,
         pictures,
       }
@@ -35,9 +38,15 @@
         let query = QueryBuilder.equal('id', <string>this.$route.params.id)
         const db = new Database()
         this.current_product = (await db.find(Product, query))[0]
-        this.categorys = this.current_product.category.split('/')
 
         query = QueryBuilder.equal('product_id', this.current_product.id!)
+
+        let product_tags:Array<ProductTag> = await db.find(ProductTag, query)
+        for(let i = 0 ; i < product_tags.length ; i++){
+          this.tags.push(product_tags[i].tag!)
+        }
+
+
         let original_pictures = await db.find(Picture, query)
         for(let i = 0 ; i < original_pictures.length ; i++){
           
@@ -84,7 +93,7 @@
           check = true
           message += "狀態是必填項目\n"
         }
-        if(this.categorys.length == 0){
+        if(this.tags.length == 0){
           check = true
           message += "分類是必填項目\n"
         }
@@ -113,13 +122,32 @@
         if(spinner){
           spinner.style.display = 'inline-block'
         }
-        this.current_product.category = this.categorys.join('/')
+
         if(this.$route.params.id == '0'){
           this.current_product.create_time = new Date()
         }
         const db = new Database()
         const storage = new Storage()
         await db.save(Product, <Product>this.current_product)
+
+        let query = QueryBuilder.equal('product_id', this.current_product.id!)
+        let old_tags:Array<ProductTag> = await db.find(ProductTag, query)
+        for(let i = 0 ; i < old_tags.length ; i++){
+          if(this.tags.find(elem => elem == old_tags[i].tag) == undefined){
+            db.destroy(ProductTag, old_tags[i])
+          }
+          else{
+            const index = this.tags.indexOf(old_tags[i].tag!)
+            this.tags.splice(index, 1)  
+          }
+        }
+        for(let i = 0 ; i < this.tags.length ; i++){
+          await db.save(Tag, <Tag>this.tags[i])
+          let link = new ProductTag()
+          link.product_id = <Product>this.current_product
+          link.tag = <Tag>this.tags[i]
+          db.save(ProductTag, link)
+        }
 
         let pictures_blob: Array<Blob> = []
         let pictures_data: Array<String> = []
@@ -128,7 +156,6 @@
           pictures_data.push(await pictures_blob[i].text())
         }
 
-        const query = QueryBuilder.equal('product_id', this.current_product.id!)
         let original_pictures:Array<Picture> = await db.find(Picture, query)
         
         for(let i = 0 ; i < original_pictures.length ; i++){
@@ -162,16 +189,18 @@
         if(this.category == '')
           return
 
-        if(this.categorys.find(elem => elem == this.category)){
+        if(this.tags.find(elem => elem.name == this.category)){
           this.category = ''
           return
         }
-        this.categorys.push(this.category)
+        let new_tag = new Tag()
+        new_tag.name = <string>this.category
+        this.tags.push(new_tag)
         this.category = ''
       },
-      async removeTag(target: string){
-        const index = this.categorys.indexOf(target)
-        this.categorys.splice(index, 1)
+      async removeTag(target: Tag){
+        const index = this.tags.indexOf(target)
+        this.tags.splice(index, 1)
       },
       async pictureUpload(){
         let input_pictures = (<HTMLInputElement>document.getElementById("picture")).files
@@ -215,13 +244,14 @@
           <div class="d-flex align-items-center mt-2">
             <h6 class="col-3 m-0 pt-1 pb-1">分類 *</h6>
             <input type="text" class="form-control p-1" v-model="category" @keyup.enter="addTag()">
+            <button type="button" class="btn btn-primary ms-3 col-2 p-1" @click="addTag()">新增分類</button>
           </div>
           <div class="d-flex align-items-center mt-1">
             <div class="col-3"></div>
             <div class="d-flex flex-wrap">
-              <div v-for="tag in categorys">
-                <div class="d-flex btn-secondary btn p-0 ps-1 pe-1 m-1" type="button" @click="removeTag(tag.toString())">
-                  <div class="m-1">{{ tag }}</div><i class="bi bi-x" style="font-size: 20px"></i>
+              <div v-for="tag in tags">
+                <div class="d-flex btn-secondary btn p-0 ps-1 pe-1 m-1" type="button" @click="removeTag(<Tag>tag)">
+                  <div class="m-1">{{ tag.name }}</div><i class="bi bi-x" style="font-size: 20px"></i>
                 </div>
               </div>
             </div>

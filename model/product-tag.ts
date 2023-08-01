@@ -4,8 +4,9 @@ import { Tag } from './tag'
 
 export class ProductTag extends Model {
   protected static tableName: string = 'product_tag'
+  
     @attribute({ type: 'relation' })
-      product?: Product
+      product_id?: Product
     
     @attribute({ type: 'relation' })
       tag?: Tag
