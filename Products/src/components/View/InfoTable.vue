@@ -11,18 +11,17 @@
   export default defineComponent ({
     data(){
       const current_product:Product = new Product()
-
       const tags: Array<Tag> = []
-
-      const category: String = ''
-
+      const tag: String = ''
       const pictures: Array<String> = []
+      const searchResult: Array<Tag> = []
 
       return {
         current_product,
         tags,
-        category,
+        tag,
         pictures,
+        searchResult,
       }
     },
     mounted(){
@@ -185,18 +184,21 @@
       
         this.$router.push({path: '/'})
       },
+      async addexistTag(tag: Tag){
+        this.tags.push(tag)
+      },
       async addTag(){
-        if(this.category == '')
+        if(this.tag == '')
           return
 
-        if(this.tags.find(elem => elem.name == this.category)){
-          this.category = ''
+        if(this.tags.find(elem => elem.name == this.tag)){
+          this.tag = ''
           return
         }
         let new_tag = new Tag()
-        new_tag.name = <string>this.category
+        new_tag.name = <string>this.tag
         this.tags.push(new_tag)
-        this.category = ''
+        this.tag = ''
       },
       async removeTag(target: Tag){
         const index = this.tags.indexOf(target)
@@ -243,7 +245,7 @@
           </div>
           <div class="d-flex align-items-center mt-2">
             <h6 class="col-3 m-0 pt-1 pb-1">分類 *</h6>
-            <input type="text" class="form-control p-1" v-model="category" @keyup.enter="addTag()">
+            <input type="text" class="form-control p-1" v-model="tag" @keyup.enter="addTag()">
             <button type="button" class="btn btn-primary ms-3 col-2 p-1" @click="addTag()">新增分類</button>
           </div>
           <div class="d-flex align-items-center mt-1">
