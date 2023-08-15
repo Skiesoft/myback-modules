@@ -35,6 +35,7 @@ export default defineComponent({
       } else {
         this.query = query
       }
+      this.query = QueryBuilder.and(...[this.query, QueryBuilder.equal("soft_delete", 0)])
       await new Promise(f => setTimeout(f, 1))
       await (this.$refs.PageBar as any).reload();
       (this.$refs.ProductList as any).fetchProducts()

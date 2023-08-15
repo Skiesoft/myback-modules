@@ -1,11 +1,13 @@
 <script lang="ts">
 import { Product } from '@/model/product'
-import { Database, QueryBuilder } from '@myback/sdk'
+import { Database, QueryBuilder, Storage } from '@myback/sdk'
 import { defineComponent } from 'vue'
+import axios from 'axios'
 import Confirm from '@/components/Common/Confirm.vue'
 import { Picture } from '@/model/picture'
 import { ProductTag } from '@/model/product-tag'
 import { Tag } from '@/model/tag'
+import { TransactionItem } from '@/model/transaction-item'
 
 export default defineComponent({
   emits: ['open'],
@@ -54,7 +56,7 @@ export default defineComponent({
       const db = new Database()
       await new Promise(f => setTimeout(f, 1))
       this.products = await db.find(Product, QueryBuilder.orderBy(this.query, this.sort_element, this.sort_order), this.page - 1, this.page_size)
-    
+
       this.product_tag_display = []
       let tags:Array<Tag> = await db.all(Tag)
       for(let i = 0 ;  i < this.products.length ; i++){
@@ -79,17 +81,25 @@ export default defineComponent({
     },
     async deleteProduct () {
       const db = new Database() 
+      const storage = new Storage()
       const query = QueryBuilder.equal('product_id', this.delete_target?.id!)
 
-      let tag_links = await db.find(ProductTag, query)
+      let transaction_item = (await db.find(TransactionItem, query)).length
+      if( transaction_item != 0){
+        this.delete_target!.soft_delete = 1
+        db.save(Product, <Product>this.delete_target)
+        this.fetchProducts()
+        return
+      }
 
+      let tag_links = await db.find(ProductTag, query)
       for(let i = 0 ; i < tag_links.length ; i++){
         await db.destroy(ProductTag,tag_links[i])
       }
 
       let pictures = await db.find(Picture, query)
-      
       for(let i = 0 ; i < pictures.length; i++){
+        storage.destroy(pictures[i].file_name!)
         await db.destroy(Picture, pictures[i])
       }
 

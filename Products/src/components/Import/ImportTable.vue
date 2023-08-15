@@ -175,7 +175,7 @@ export default defineComponent({
 
         transactionItem.id = transaction.id
         transactionItem.transaction = transaction
-        transactionItem.product = product[0]
+        transactionItem.product_id = product[0]
         transactionItem.quantity = this.counts[i]
         transactionItem.labeled_price = this.products[i].price
         transactionItem.currency = 'NT'
