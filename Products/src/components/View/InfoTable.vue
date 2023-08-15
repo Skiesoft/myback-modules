@@ -15,6 +15,8 @@
       const tag: String = ''
       const pictures: Array<String> = []
       const searchResult: Array<Tag> = []
+      const isOpen: boolean = true;
+      const arrowCounter: number = 0;
 
       return {
         current_product,
@@ -22,10 +24,23 @@
         tag,
         pictures,
         searchResult,
+        isOpen,
+        arrowCounter,
       }
     },
     mounted(){
       this.load()
+    },
+    watch: {
+      tag(){
+        if (this.tag !== '') {
+        this.filterResults()
+        this.isOpen = true
+      } else {
+        this.searchResult = []
+        this.isOpen = false
+      }
+      }
     },
     methods: {
       async load(){
@@ -42,9 +57,10 @@
 
         let product_tags:Array<ProductTag> = await db.find(ProductTag, query)
         for(let i = 0 ; i < product_tags.length ; i++){
-          this.tags.push(product_tags[i].tag!)
+          let target = product_tags[i].tag
+          let tag:Array<Tag> = await db.find(Tag, QueryBuilder.equal('id', target as unknown as number));
+          this.tags.push(tag[0])
         }
-
 
         let original_pictures = await db.find(Picture, query)
         for(let i = 0 ; i < original_pictures.length ; i++){
@@ -184,8 +200,26 @@
       
         this.$router.push({path: '/'})
       },
+      async filterResults(){
+        const loadingElement = document.getElementById('loading')
+        if (loadingElement) {
+          loadingElement.style.visibility = 'visible'
+        }
+        const db = new Database()
+        const query = QueryBuilder.like('name', '%' + this.tag + '%')
+        this.searchResult = await db.find(Tag, query)
+        if (loadingElement) {
+          loadingElement.style.visibility = 'hidden'
+        }
+      },
       async addexistTag(tag: Tag){
+        if(this.tags.find(elem => elem.name == tag.name)){
+          this.tag = ''
+          return
+        }
+
         this.tags.push(tag)
+        this.tag = ''
       },
       async addTag(){
         if(this.tag == '')
@@ -245,8 +279,19 @@
           </div>
           <div class="d-flex align-items-center mt-2">
             <h6 class="col-3 m-0 pt-1 pb-1">分類 *</h6>
-            <input type="text" class="form-control p-1" v-model="tag" @keyup.enter="addTag()">
-            <button type="button" class="btn btn-primary ms-3 col-2 p-1" @click="addTag()">新增分類</button>
+            <div class="dropdown col-6">
+              <input type="text" class="form-control p-1" v-model="tag" @keyup.enter="addTag()">
+              <ul v-show="isOpen" class="list-group mb-3 position-absolute top-100 z-index-2 w-100 text-break" style="overflow: auto; max-height: 100px;">
+                <li v-for="(result, i) in searchResult" 
+                :key="i"
+                @mouseover="arrowCounter = i" 
+                @click="addexistTag(<Tag>result)"
+                :class="{'active': i === arrowCounter}"
+                class="list-group-item pt-1 pb-1" >{{ result.name }}</li>
+              </ul>
+            </div>
+            <div id="loading" class="spinner-border text-primary spinner-border-sm m-2" role="status" style="visibility: hidden"></div>
+            <button type="button" class="btn btn-primary ms-1 col-2 p-1" @click="addTag()">新增分類</button>
           </div>
           <div class="d-flex align-items-center mt-1">
             <div class="col-3"></div>
