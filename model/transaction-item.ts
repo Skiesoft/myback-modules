@@ -3,7 +3,7 @@ import { Product } from './product'
 import { Transaction } from './transaction'
 
 export class TransactionItem extends Model {
-  protected static tableName: string = 'transaction_items'
+  protected static tableName: string = 'transaction_item'
 
     @attribute({ type: 'int' })
       id?: number

@@ -1,7 +1,7 @@
 import { Model, attribute } from '@myback/sdk'
 
 export class Contact extends Model {
-  protected static tableName: string = 'contacts'
+  protected static tableName: string = 'contact'
 
     @attribute({ type: 'int', primary: true, autoIndex: true })
       id?: number
