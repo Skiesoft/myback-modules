@@ -12,7 +12,7 @@ export class TransactionItem extends Model {
       transaction?: Transaction
 
     @attribute({ type: 'relation' })
-      product?: Product
+      product_id?: Product
 
     @attribute({ type: 'int' })
       quantity?: number

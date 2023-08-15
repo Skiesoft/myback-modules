@@ -56,4 +56,7 @@ export class Product extends Model {
 
     @attribute({ type: 'int' })
       stock: number = 0
+
+    @attribute({ type: 'int'})
+      soft_delete: number = 0
 }
