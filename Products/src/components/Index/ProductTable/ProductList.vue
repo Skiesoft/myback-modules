@@ -5,6 +5,7 @@ import { defineComponent } from 'vue'
 import Confirm from '@/components/Common/Confirm.vue'
 import { Picture } from '@/model/picture'
 import { ProductTag } from '@/model/product-tag'
+import { Tag } from '@/model/tag'
 
 export default defineComponent({
   emits: ['open'],
@@ -15,7 +16,7 @@ export default defineComponent({
         products:Array<Product>
         sort_element:string
         sort_order:'asc'|'desc'
-        product_tags:Array<String>
+        product_tag_display:Array<String>
       }
 
       return {
@@ -23,7 +24,7 @@ export default defineComponent({
         delete_target: null,
         sort_element: 'id',
         sort_order: 'asc',
-        product_tags: {}
+        product_tag_display: {}
       } as ComponentData
   },
   methods: {
@@ -53,16 +54,20 @@ export default defineComponent({
       const db = new Database()
       await new Promise(f => setTimeout(f, 1))
       this.products = await db.find(Product, QueryBuilder.orderBy(this.query, this.sort_element, this.sort_order), this.page - 1, this.page_size)
-
+    
+      this.product_tag_display = []
+      let tags:Array<Tag> = await db.all(Tag)
       for(let i = 0 ;  i < this.products.length ; i++){
-        let query = QueryBuilder.equal("product_id", this.products[i].id!)
-        let temp:Array<ProductTag> = await db.find(ProductTag, query)
-        
+        let product_query = QueryBuilder.equal("product_id", this.products[i].id!)
+        let product_tag:Array<ProductTag> = await db.find(ProductTag, product_query)
         let str:string = ''
-        for(let j = 0 ; j < temp.length ; j++){
-          str += temp[j].tag!.name
-          str += '/'
+        for(let j = 0 ; j < product_tag.length ; j++){
+          str += tags.find(elem => elem.id == (product_tag[j].tag as unknown as number))!.name
+          if(j != product_tag.length-1){
+            str += '/'
+          }
         }
+        this.product_tag_display.push(str)
       }
     },
     async edit (product:Product) {
@@ -156,7 +161,7 @@ export default defineComponent({
       <div class="d-flex container mt-2">
         <div class="me-5" style="width: 31px">{{ product.id }}</div>
         <div class="col-2 overflowhidden me-2">{{ product.name }}</div>
-        <div class="col overflowhidden">{{ product_tags[i] }}</div>
+        <div class="col overflowhidden">{{ product_tag_display[i] }}</div>
         <div class="col">{{ product.status }}</div>
         <div class="col">{{ product.stock }}</div>
         <div class="col">{{ product.create_time?.toISOString().split('T')[0] }}</div>

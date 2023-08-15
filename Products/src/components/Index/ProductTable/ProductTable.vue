@@ -38,16 +38,17 @@ export default defineComponent({
       await new Promise(f => setTimeout(f, 1))
       await (this.$refs.PageBar as any).reload();
       (this.$refs.ProductList as any).fetchProducts()
+      
     },
     async newProduct () {
       (this.$refs.ProductList as any).edit(null)
     },
     async update () {
-      (this.$refs.ProductList as any).fetchProducts()
+      this.changeQuery(null)
     }
   },
   mounted () {
-    this.changeQuery(null)
+    
   },
   components: { ProductList, SearchBar, PageBar }
 })
