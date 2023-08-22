@@ -49,7 +49,7 @@ export default defineComponent({
         this.member.email = this.email
 
         const db = new Database()
-        await db.save(Contact, <Contact>this.member)
+        await db.save(Contact, this.member as Contact)
         this.closeModal()
       }
     },
@@ -112,16 +112,16 @@ export default defineComponent({
           <div class="d-flex m-3 col-8 flex-wrap">
             <div class="d-flex w-100 mb-3">
               <h6 class="align-self-end flex-grow-1 ms-2 me-2 pe-2 col-2">名字</h6>
-              <input type="text" class="form-control ms-2" placeholder="Name" v-model="name">
+              <input type="text" class="form-control ms-2" placeholder="Name" v-model="name" />
             </div>
             <div class="d-flex w-100 mb-3">
               <h6 class="align-self-end ms-2 me-2 pe-2 col-2">電話號碼</h6>
               <input type="text" class="form-control ms-2" placeholder="Phone Number" @keypress="onlyNumber($event)"
-                v-model="phoneNumber">
+                v-model="phoneNumber" />
             </div>
             <div class="d-flex w-100 mb-3">
               <h6 class="align-self-end ms-2 me-2 pe-2 col-2">Email</h6>
-              <input type="text" class="form-control ms-2" placeholder="Email" v-model="email">
+              <input type="text" class="form-control ms-2" placeholder="Email" v-model="email" />
             </div>
             <button type="button" class="btn btn-primary mt-2 ms-1" @click="saveMember">保存</button>
           </div>

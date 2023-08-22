@@ -1,195 +1,190 @@
 <script lang="ts">
-  import { defineComponent } from 'vue';
-  import { Picture } from '@/model/picture'
-  import { Product } from '@/model/product'
-  import { Config, Database, QueryBuilder, Storage } from '@myback/sdk'
-  import axios from 'axios'
-  
+import { defineComponent } from 'vue'
+import { Picture } from '@/model/picture'
+import { Product } from '@/model/product'
+import { Database, QueryBuilder, Storage } from '@myback/sdk'
+import axios from 'axios'
 
-  export default defineComponent ({
-    data(){
-      const current_product:Product = new Product()
+export default defineComponent({
+  data () {
+    const current_product:Product = new Product()
 
-      const category: String = ''
-      const categorys: Array<String> = []
+    const category: String = ''
+    const categorys: Array<String> = []
 
-      const pictures: Array<String> = []
+    const pictures: Array<String> = []
 
-      return {
-        current_product,
-        categorys,
-        category,
-        pictures,
+    return {
+      current_product,
+      categorys,
+      category,
+      pictures
+    }
+  },
+  mounted () {
+    this.load()
+  },
+  methods: {
+    async load () {
+      if (this.$route.params.id === '0') {
+        this.unlock()
+        return
       }
+
+      let query = QueryBuilder.equal('id', this.$route.params.id as string)
+      const db = new Database()
+      this.current_product = (await db.find(Product, query))[0]
+      this.categorys = this.current_product.category.split('/')
+
+      query = QueryBuilder.equal('product_id', this.current_product.id!)
+      const original_pictures = await db.find(Picture, query)
+      for (let i = 0; i < original_pictures.length; i++) {
+        const picture_blob = (await axios.get(original_pictures[i].url, { responseType: 'blob' })).data
+        const url = window.URL.createObjectURL(picture_blob)
+        this.pictures.push(url)
+      }
+
+      await this.lock()
     },
-    mounted(){
-      this.load()
+    async unlock () {
+      document.getElementById('stock_input')?.removeAttribute('disabled')
     },
-    methods: {
-      async load(){
-        if(this.$route.params.id == '0'){
-          this.unlock()
-          return
-        }
+    async lock () {
+      document.getElementById('stock_input')?.setAttribute('disabled', '')
+    },
+    async valid () {
+      let check:boolean = false
 
-        let query = QueryBuilder.equal('id', <string>this.$route.params.id)
-        const db = new Database()
-        this.current_product = (await db.find(Product, query))[0]
-        this.categorys = this.current_product.category.split('/')
+      let message:string = ''
+      const db = new Database()
 
-        query = QueryBuilder.equal('product_id', this.current_product.id!)
-        let original_pictures = await db.find(Picture, query)
-        for(let i = 0 ; i < original_pictures.length ; i++){
-          
-          let picture_blob = (await axios.get(original_pictures[i].url, {responseType: 'blob'} )).data  
-          let url = window.URL.createObjectURL(picture_blob)
-          this.pictures.push(url)
-        }
-
-        await this.lock()
-      },
-      async unlock(){
-        document.getElementById('stock_input')?.removeAttribute('disabled')
-      },
-      async lock(){
-        document.getElementById('stock_input')?.setAttribute('disabled','')
-      },
-      async valid(){
-        let check:boolean = false; 
-
-        let message:string = ""
-        const db = new Database()
-        
-        if(this.current_product.upc != '' && this.current_product.upc != undefined){
-          let query = QueryBuilder.equal('upc', this.current_product!.upc!)
-          let same_upc_products = await db.find(Product, query)
-          if(same_upc_products.length > 0){
-            if(this.$route.params.id == '0'){
+      if (this.current_product.upc !== '' && this.current_product.upc !== undefined) {
+        const query = QueryBuilder.equal('upc', this.current_product!.upc!)
+        const same_upc_products = await db.find(Product, query)
+        if (same_upc_products.length > 0) {
+          if (this.$route.params.id === '0') {
+            check = true
+            message += '條碼重複\n'
+          } else {
+            if (same_upc_products[0].id !== this.current_product.id) {
               check = true
-              message += "條碼重複\n"
-            }
-            else{
-              if(same_upc_products[0].id != this.current_product.id){
-                check = true
-                message += "條碼重複\n"
-              }
+              message += '條碼重複\n'
             }
           }
         }
-        if(this.current_product.name == ''){
-          check = true
-          message += "名稱是必填項目\n"
-        }
-        if(this.current_product.status == ''){
-          check = true
-          message += "狀態是必填項目\n"
-        }
-        if(this.categorys.length == 0){
-          check = true
-          message += "分類是必填項目\n"
-        }
-        if(this.current_product.manufacturer == ''){
-          check = true
-          message += "製造商是必填項目\n"
-        }
-        if(this.current_product.price == 0){
-          check = true
-          message += "定價是必填項目\n"
-        }
-        if(this.current_product.unit == ''){
-          check = true
-          message += "單位是必填項目\n"
-        }
+      }
+      if (this.current_product.name === '') {
+        check = true
+        message += '名稱是必填項目\n'
+      }
+      if (this.current_product.status === '') {
+        check = true
+        message += '狀態是必填項目\n'
+      }
+      if (this.categorys.length === 0) {
+        check = true
+        message += '分類是必填項目\n'
+      }
+      if (this.current_product.manufacturer === '') {
+        check = true
+        message += '製造商是必填項目\n'
+      }
+      if (this.current_product.price === 0) {
+        check = true
+        message += '定價是必填項目\n'
+      }
+      if (this.current_product.unit === '') {
+        check = true
+        message += '單位是必填項目\n'
+      }
 
-        if(check){
-          window.alert(message)
-          return
-        }
-        this.save()
-      },
-      async save(){
-        document.getElementById('save')?.setAttribute('disabled','disabled')
-        let spinner = document.getElementById('spinner')
-        if(spinner){
-          spinner.style.display = 'inline-block'
-        }
-        this.current_product.category = this.categorys.join('/')
-        if(this.$route.params.id == '0'){
-          this.current_product.create_time = new Date()
-        }
-        const db = new Database()
-        const storage = new Storage()
-        await db.save(Product, <Product>this.current_product)
+      if (check) {
+        window.alert(message)
+        return
+      }
+      this.save()
+    },
+    async save () {
+      document.getElementById('save')?.setAttribute('disabled', 'disabled')
+      const spinner = document.getElementById('spinner')
+      if (spinner) {
+        spinner.style.display = 'inline-block'
+      }
+      this.current_product.category = this.categorys.join('/')
+      if (this.$route.params.id === '0') {
+        this.current_product.create_time = new Date()
+      }
+      const db = new Database()
+      const storage = new Storage()
+      await db.save(Product, this.current_product as Product)
 
-        let pictures_blob: Array<Blob> = []
-        let pictures_data: Array<String> = []
-        for(let i = 0 ; i < this.pictures.length ; i++){
-          pictures_blob.push((await axios.get(<string>this.pictures[i] ,{responseType: 'blob'})).data)
-          pictures_data.push(await pictures_blob[i].text())
+      const pictures_blob: Array<Blob> = []
+      const pictures_data: Array<String> = []
+      for (let i = 0; i < this.pictures.length; i++) {
+        pictures_blob.push((await axios.get(this.pictures[i] as string, { responseType: 'blob' })).data)
+        pictures_data.push(await pictures_blob[i].text())
+      }
+
+      const query = QueryBuilder.equal('product_id', this.current_product.id!)
+      const original_pictures:Array<Picture> = await db.find(Picture, query)
+
+      for (let i = 0; i < original_pictures.length; i++) {
+        const ori_picture_blob = (await axios.get(original_pictures[i].url!, { responseType: 'blob' })).data
+        const ori_picture_data = await ori_picture_blob.text()
+
+        const index = pictures_data.indexOf(ori_picture_data)
+        if (index === -1) {
+          storage.destroy(original_pictures[i].file_name!)
+          db.destroy(Picture, original_pictures[i])
+        } else {
+          pictures_blob.splice(index, 1)
         }
+      }
 
-        const query = QueryBuilder.equal('product_id', this.current_product.id!)
-        let original_pictures:Array<Picture> = await db.find(Picture, query)
-        
-        for(let i = 0 ; i < original_pictures.length ; i++){
-          let ori_picture_blob = (await axios.get(original_pictures[i].url!, {responseType: 'blob'})).data
-          let ori_picture_data = await ori_picture_blob.text()
+      for (let i = 0; i < pictures_blob.length; i++) {
+        const picture_file = new File([pictures_blob[i]], 'temp')
+        const picture_info = await storage.uploadWithAutoname(picture_file)
 
-          let index = pictures_data.indexOf(ori_picture_data)
-          if(index == -1){
-            storage.destroy(original_pictures[i].file_name!)
-            db.destroy(Picture, original_pictures[i])
-          }
-          else{
-            pictures_blob.splice(index, 1)
-          }
-        }
+        const picture:Picture = new Picture()
+        picture.product_id = this.current_product as Product
+        picture.file_name = picture_info.path
+        picture.url = picture_info.url
+        db.save(Picture, picture)
+      }
 
-        for(let i = 0 ; i < pictures_blob.length ; i++){
-          let picture_file = new File([pictures_blob[i]],"temp")
-          let picture_info = await storage.uploadWithAutoname(picture_file)
+      this.$router.push({ path: '/' })
+    },
+    async addTag () {
+      if (this.category === '') { return }
 
-          let picture:Picture = new Picture()
-          picture.product_id = <Product>this.current_product
-          picture.file_name = picture_info.path
-          picture.url = picture_info.url
-          db.save(Picture, picture)
-        }
-      
-        this.$router.push({path: '/'})
-      },
-      async addTag(){
-        if(this.category == '')
-          return
-
-        if(this.categorys.find(elem => elem == this.category)){
-          this.category = ''
-          return
-        }
-        this.categorys.push(this.category)
+      if (this.categorys.find(elem => elem === this.category)) {
         this.category = ''
-      },
-      async removeTag(target: string){
-        const index = this.categorys.indexOf(target)
-        this.categorys.splice(index, 1)
-      },
-      async pictureUpload(){
-        let input_pictures = (<HTMLInputElement>document.getElementById("picture")).files
-        if(input_pictures == null){
-          return
-        }
-        for(let i = 0 ; i < input_pictures.length ; i++){
-          let url = window.URL.createObjectURL(input_pictures.item(i)!)
-          this.pictures.push(url)
-        }
-      },
-      async pictureRemove(picture: string){
-        let index = this.pictures.indexOf(picture)
-        this.pictures.splice(index, 1)
+        return
+      }
+      this.categorys.push(this.category)
+      this.category = ''
+    },
+    async removeTag (target: string) {
+      const index = this.categorys.indexOf(target)
+      this.categorys.splice(index, 1)
+    },
+    async pictureUpload () {
+      const input_pictures = (document.getElementById('picture') as HTMLInputElement).files
+      if (input_pictures === null) {
+        return
+      }
+      for (let i = 0; i < input_pictures.length; i++) {
+        const url = window.URL.createObjectURL(input_pictures.item(i)!)
+        this.pictures.push(url)
       }
     },
-    components: {}
-  })
+    async pictureRemove (picture: string) {
+      const index = this.pictures.indexOf(picture)
+      this.pictures.splice(index, 1)
+    }
+  },
+  components: {}
+})
 
 </script>
 
@@ -270,7 +265,7 @@
             <div v-for="picture in pictures">
               <div class="align-item-start d-flex">
                 <img class="m-1" :src=picture.toString() style="width:400px">
-                <i class="bi bi-x" style="font-size: 25px; right: 25px" type="button" @click="pictureRemove(picture.toString())"></i> 
+                <i class="bi bi-x" style="font-size: 25px; right: 25px" type="button" @click="pictureRemove(picture.toString())"></i>
               </div>
             </div>
           </div>
@@ -286,9 +281,9 @@
             <h6 class="col-3 m-0 pt-1 pb-1">庫存數量 *</h6>
             <input id="stock_input" type="number" class="form-control p-1" v-model="current_product.stock">
           </div>
-          <div class="d-flex justify-content-end mt-2"> 
+          <div class="d-flex justify-content-end mt-2">
             <button id="save" type="button" class="btn btn-primary ms-3 col-2 fw-bold" @click="valid()">儲存 <div id="spinner" class="spinner-border text-light spinner-border-sm" role="status" style="display: none"></div></button>
-            
+
           </div>
         </div >
   </div>

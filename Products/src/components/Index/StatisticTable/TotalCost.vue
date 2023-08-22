@@ -16,9 +16,9 @@ export default defineComponent({
       this.total_cost = 0
 
       const query = QueryBuilder.greaterThan('quantity', 0)
-      let sales:TransactionItem[] = await db.find(TransactionItem, query)
+      const sales:TransactionItem[] = await db.find(TransactionItem, query)
       for (let i = 0; i < sales.length; i++) {
-        this.total_cost += sales[i].paid_price!*sales[i].quantity!
+        this.total_cost += sales[i].paid_price! * sales[i].quantity!
       }
     }
   }

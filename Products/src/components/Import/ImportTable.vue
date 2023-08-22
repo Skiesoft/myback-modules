@@ -187,7 +187,7 @@ export default defineComponent({
       this.$router.push({ path: '/' })
     },
     async checkCountValid (index: number) {
-      if (this.counts[index] == 0) {
+      if (this.counts[index] === 0) {
         this.counts[index] = 1
       }
     }
