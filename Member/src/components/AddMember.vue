@@ -8,7 +8,6 @@ type DataType = {
   name: string,
   phoneNumber: string,
   email: string,
-  role: string,
   modal: Modal,
 }
 
@@ -19,15 +18,14 @@ export default defineComponent({
     return {
       name: '',
       phoneNumber: '',
-      email: '',
-      role: ''
+      email: ''
     } as DataType
   },
   mounted () {
     this.modal = new Modal(document.getElementById('addFrame')!)
     const myModal = document.getElementById('addFrame')
     myModal!.addEventListener('hidden.bs.modal', () => {
-      this.closeModal()
+      this.$emit('close')
     })
   },
   methods: {
@@ -83,7 +81,6 @@ export default defineComponent({
       this.name = ''
       this.phoneNumber = ''
       this.email = ''
-      this.role = ''
     },
     async onlyNumber (evt: KeyboardEvent): Promise<void> {
       const keysAllowed: RegExp = /[0-9]/g
@@ -98,8 +95,6 @@ export default defineComponent({
     showModalIn () {
       if (this.showModalIn === true) {
         this.showModal()
-      } else {
-        this.closeModal()
       }
     }
   }
@@ -124,13 +119,6 @@ export default defineComponent({
             <div class="d-flex w-100 mb-3">
               <h6 class="align-self-end ms-2 me-2 pe-2 col-2">Email</h6>
               <input type="text" class="form-control ms-2" placeholder="Email" v-model="email">
-            </div>
-            <div class="d-flex w-100 mb-3">
-              <h6 class="align-self-end ms-2 me-2 pe-2 col-2">層級</h6>
-              <select class="form-select ms-2" aria-label="層級" v-model="role">
-                <option value=""></option>
-                <option value="VIP">VIP</option>
-              </select>
             </div>
             <button type="button" class="btn btn-primary mt-2 ms-1" @click="addMember">新增會員</button>
           </div>

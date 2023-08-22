@@ -8,7 +8,6 @@ type DataType = {
   name: string,
   phoneNumber: string,
   email: string,
-  role: string,
   modal: Modal,
   member: Contact
 }
@@ -21,7 +20,6 @@ export default defineComponent({
       name: '',
       phoneNumber: '',
       email: '',
-      role: '',
       member: new Contact()
     } as DataType
   },
@@ -29,7 +27,7 @@ export default defineComponent({
     this.modal = new Modal(document.getElementById('addFrame')!)
     const myModal = document.getElementById('addFrame')
     myModal!.addEventListener('hidden.bs.modal', () => {
-      this.closeModal()
+      this.$emit('close')
     })
   },
   methods: {
@@ -38,27 +36,20 @@ export default defineComponent({
       const query = QueryBuilder.equal('id', this.memberId)
       const found = await db.find(Contact, query)
       if (found.length !== 0) {
-        console.log('found')
         this.member = found[0]
         this.name = found[0].name
-        this.phoneNumber = found[0].phone_number
+        this.phoneNumber = found[0].phone
         this.email = found[0].email
-        this.role = found[0].role
       }
     },
     async saveMember () {
-      const date = new Date()
       if (!(await this.validCheck())) {
-        const member = new Contact()
-        member.name = this.name
-        member.create_date = date
-        member.email = this.email
-        member.phone = this.phoneNumber
-        // member.role = this.role
+        this.member.name = this.name
+        this.member.phone = this.phoneNumber
+        this.member.email = this.email
 
         const db = new Database()
-        await db.save(Contact, member)
-        this.member = member
+        await db.save(Contact, <Contact>this.member)
         this.closeModal()
       }
     },
@@ -107,8 +98,6 @@ export default defineComponent({
       if (this.showModalIn === true) {
         this.showModal()
         this.showInfo()
-      } else {
-        this.closeModal()
       }
     }
   }
@@ -133,13 +122,6 @@ export default defineComponent({
             <div class="d-flex w-100 mb-3">
               <h6 class="align-self-end ms-2 me-2 pe-2 col-2">Email</h6>
               <input type="text" class="form-control ms-2" placeholder="Email" v-model="email">
-            </div>
-            <div class="d-flex w-100 mb-3">
-              <h6 class="align-self-end ms-2 me-2 pe-2 col-2">層級</h6>
-              <select class="form-select ms-2" aria-label="role" v-model="role">
-                <option value=""></option>
-                <option value="VIP">VIP</option>
-              </select>
             </div>
             <button type="button" class="btn btn-primary mt-2 ms-1" @click="saveMember">保存</button>
           </div>

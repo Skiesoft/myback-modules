@@ -26,17 +26,17 @@ export default defineComponent({
       const found = await db.find(Contact, query)
       if (found[0]) {
         this.member = found[0]
-        this.createDate = this.member.create_date?.toString().split('T')[0].split('-').join('/')!
+        this.createDate = String(this.member.create_date?.getFullYear()) + ('/') + String(this.member.create_date?.getMonth()! + 1) + ('/') + String(this.member.create_date?.getDate())
         this.calculateTotalPrice()
       }
     },
     async calculateTotalPrice () {
       const db = new Database()
-      const query = QueryBuilder.equal('member', this.id)
+      const query = QueryBuilder.equal('contact', this.id)
       const found = await db.find(Transaction, query)
       if (found.length !== 0) {
         for (let i = 0; i < found.length; i++) {
-          this.totalPrice += found[i].amount
+          this.totalPrice += found[i].total_price
         }
       }
     },
@@ -84,10 +84,6 @@ export default defineComponent({
               <div class="d-flex justify-content-between">
                 <div>加入時間:</div>
                 <div>{{ createDate }}</div>
-              </div>
-              <div class="d-flex justify-content-between">
-                <div>層級:</div>
-                <!-- <div>{{ member.role }}</div> -->
               </div>
               <div class="d-flex justify-content-between">
                 <div>累積消費總額:</div>
