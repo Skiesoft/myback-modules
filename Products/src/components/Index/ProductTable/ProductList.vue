@@ -142,8 +142,8 @@ export default defineComponent({
         <div class="col">{{ product.create_time?.toISOString().split('T')[0] }}</div>
         <div class="col">{{ product.manufacturer }}</div>
         <div class="d-flex col">
-          <button class="link" style="color: #3B587A" @click="edit(<Product>product)">Edit</button>
-          <button class="link link-danger ms-1" @click="deleteConfirm(<Product>product)">Delete</button>
+          <button class="link" style="color: #3B587A" @click="edit(<Product>product)"><u>編輯</u></button>
+          <button class="link link-danger ms-1" @click="deleteConfirm(<Product>product)"><u>刪除</u></button>
         </div>
       </div>
     </div>

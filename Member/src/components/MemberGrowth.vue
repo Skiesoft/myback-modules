@@ -6,7 +6,7 @@ import { Contact } from '../model/contact'
 export default defineComponent({
   data () {
     return {
-      growth: ''
+      growth: 0
     }
   },
   mounted () {
@@ -15,7 +15,7 @@ export default defineComponent({
   methods: {
     async updateMemberGrowth () {
       const db = new Database()
-      this.growth = String(await db.count(Contact))
+      this.growth = Number(await db.count(Contact))
     }
   }
 })

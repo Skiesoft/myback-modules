@@ -48,7 +48,7 @@ export class Product extends Model {
     @attribute({ type: 'string', nullable: true })
       note?: string
 
-    @attribute({ type: 'int' })
+    @attribute({ type: 'float' })
       price: number = 0
 
     @attribute({ type: 'int' })

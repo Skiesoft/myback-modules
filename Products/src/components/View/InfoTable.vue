@@ -109,6 +109,10 @@
       },
       async save(){
         document.getElementById('save')?.setAttribute('disabled','disabled')
+        let spinner = document.getElementById('spinner')
+        if(spinner){
+          spinner.style.display = 'inline-block'
+        }
         this.current_product.category = this.categorys.join('/')
         if(this.$route.params.id == '0'){
           this.current_product.create_time = new Date()
@@ -197,7 +201,7 @@
         <hr class="border border-secondary opacity-100  m-1" />
         <div class="m-3 mt-1 flex-col">
           <div class="d-flex align-items-center mt-2">
-            <h6 class="col-3 m-0 pt-1 pb-1">名稱</h6>
+            <h6 class="col-3 m-0 pt-1 pb-1">名稱 *</h6>
             <input type="text" class="form-control p-1" v-model="current_product.name">
           </div>
           <div class="d-flex align-items-center mt-2">
@@ -209,7 +213,7 @@
             <input type="text" class="form-control p-1" v-model="current_product.upc">
           </div>
           <div class="d-flex align-items-center mt-2">
-            <h6 class="col-3 m-0 pt-1 pb-1">分類</h6>
+            <h6 class="col-3 m-0 pt-1 pb-1">分類 *</h6>
             <input type="text" class="form-control p-1" v-model="category" @keyup.enter="addTag()">
           </div>
           <div class="d-flex align-items-center mt-1">
@@ -223,7 +227,7 @@
             </div>
           </div>
           <div class="d-flex align-items-center mt-2">
-            <h6 class="col-3 m-0 pt-1 pb-1">狀態</h6>
+            <h6 class="col-3 m-0 pt-1 pb-1">狀態 *</h6>
             <div class="col-6">
             <select class="form-select" v-model="current_product.status">
               <option>待進貨</option>
@@ -234,15 +238,15 @@
             </div>
           </div>
           <div class="d-flex align-items-center mt-2">
-            <h6 class="col-3 m-0 pt-1 pb-1">製造商</h6>
+            <h6 class="col-3 m-0 pt-1 pb-1">製造商 *</h6>
             <input type="text" class="form-control p-1"  v-model="current_product.manufacturer">
           </div>
           <div class="d-flex align-items-center mt-2">
-            <h6 class="col-3 m-0 pt-1 pb-1">定價</h6>
+            <h6 class="col-3 m-0 pt-1 pb-1">定價 *</h6>
             <input type="number" class="form-control p-1" v-model="current_product.price">
           </div>
           <div class="d-flex align-items-center mt-2">
-            <h6 class="col-3 m-0 pt-1 pb-1">單位</h6>
+            <h6 class="col-3 m-0 pt-1 pb-1">單位 *</h6>
             <input type="text" class="form-control p-1" v-model="current_product.unit">
           </div>
           <div class="d-flex align-items-center mt-2">
@@ -279,11 +283,12 @@
             <textarea class="form-control" v-model="current_product.note"></textarea>
           </div>
           <div class="d-flex align-items-center mt-2">
-            <h6 class="col-3 m-0 pt-1 pb-1">庫存數量</h6>
+            <h6 class="col-3 m-0 pt-1 pb-1">庫存數量 *</h6>
             <input id="stock_input" type="number" class="form-control p-1" v-model="current_product.stock">
           </div>
           <div class="d-flex justify-content-end mt-2"> 
-            <button id="save" type="button" class="btn btn-primary ms-3 col-2 fw-bold" @click="valid()">儲存</button>
+            <button id="save" type="button" class="btn btn-primary ms-3 col-2 fw-bold" @click="valid()">儲存 <div id="spinner" class="spinner-border text-light spinner-border-sm" role="status" style="display: none"></div></button>
+            
           </div>
         </div >
   </div>
