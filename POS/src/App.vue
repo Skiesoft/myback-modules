@@ -33,9 +33,6 @@ export default defineComponent({
     }
 
     const memberSearchRef = ref<InstanceType<typeof MemberSearch>>()
-    const checkMember = () => {
-      memberSearchRef.value?.checkMember()
-    }
     const getPhoneNumber = () => {
       return memberSearchRef.value!.$data.phonenumber_now
     }
@@ -66,7 +63,6 @@ export default defineComponent({
       getChangePrice,
       removeList,
       productListRef,
-      checkMember,
       getPhoneNumber,
       removeMember,
       memberSearchRef,
@@ -118,9 +114,8 @@ export default defineComponent({
         order.time = time
         order.total_price = Number(this.actualIncome)
         order.internet_marketing = this.getOnline()
-        this.checkMember()
         if (this.getPhoneNumber() !== '') {
-          const query = QueryBuilder.equal('phone_number', String(this.getPhoneNumber()))
+          const query = QueryBuilder.equal('phone', String(this.getPhoneNumber()))
           const db = new Database()
           const found = await db.find(Contact, query)
           if (found[0]) {
@@ -139,9 +134,11 @@ export default defineComponent({
           const found = await db.find(Product, query)
 
           orderitem.id = order.id
+          orderitem.transaction = order
           orderitem.product = found[0]
           orderitem.quantity = -1 * this.counts[i]
           orderitem.labeled_price = this.products[i].price
+          orderitem.currency = 'NT'
           orderitem.exchange_rate = 1
           orderitem.discount = (this.getChangePrice(i) > 0 ? this.getChangePrice(i) : 0)
           orderitem.paid_price = this.getSubTotal(i)

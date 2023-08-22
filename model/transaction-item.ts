@@ -32,6 +32,6 @@ export class TransactionItem extends Model {
     @attribute({ type: 'float' })
       paid_price?: number
 
-    @attribute({ type: 'string', nullable:true})
+    @attribute({ type: 'string', nullable: true })
       note: string = ''
 }
